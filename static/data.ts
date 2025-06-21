@@ -1,0 +1,35 @@
+export const productsInCartData = [
+    {
+      id: 1,
+      name: "Laptop v23 15.6 inch 9 generation core i7",
+      category: "Digital Market",
+      quantity: 1,
+      price: 500,
+      currency: "$",
+      isFavorite: true,
+      isChecked: true,
+      image: "/icons/products/1.png",
+    },
+    {
+      id: 2,
+      name: "Men's Slim Fit Casual Lightweight Soft Waterproof Jacket",
+      category: "Fashion House",
+      quantity: 1,
+      price: 500,
+      currency: "$",
+      isFavorite: true,
+      isChecked: false,
+      image: "/icons/products/1.png",
+    },
+    {
+      id: 3,
+      name: "Men's Slim Fit Casual Lightweight Soft Waterproof Jacket",
+      category: "Fashion House",
+      quantity: 1,
+      price: 500,
+      currency: "$",
+      isFavorite: false,
+      isChecked: false,
+      image: "/icons/products/1.png",
+    }
+  ];
