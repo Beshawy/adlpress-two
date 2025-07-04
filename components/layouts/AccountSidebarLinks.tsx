@@ -9,6 +9,13 @@ export default function AccountSidebarLinks() {
   return (
     <div className="text-sm cursor-pointer previous-orders py-4">
       <SidebarGroup
+        className={pathname.includes("/account") && !pathname.includes("/account/overview") && !pathname.includes("/account/support") && !pathname.includes("/account/settings") ? "active" : ""}
+      >
+        <LinkApp href="/account">
+          الملف الشخصي
+        </LinkApp>
+      </SidebarGroup>
+      <SidebarGroup
         className={pathname.includes("/account/overview") ? "active" : ""}
       >
         <LinkApp href="/account/overview">

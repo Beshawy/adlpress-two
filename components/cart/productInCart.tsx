@@ -6,7 +6,7 @@ import { Heart, Trash2 } from "lucide-react";
 import { useState } from "react";
 import AlertCart from "../cart/AlertCart";
 import useDelete from "@/hooks/use-delete";
-import { Product } from "@/app/(pages)/products/[id]/page";
+//import { Product } from "@/app/(pages)/products/[id]/page";
 import SelectQuantity from "./SelectQuantity";
 
 interface ProductProps {

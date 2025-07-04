@@ -7,7 +7,6 @@ import AlertCart from "@/components/cart/AlertCart";
 import useDelete from "@/hooks/use-delete";
 import CartLayout from "./CartLayout";
 import useFetchAuth from "@/hooks/use-fetch-auth";
-import LoadingPage from "../../products/[id]/loading";
 import { notFound } from "next/navigation";
 
 export default function Page() {

@@ -20,11 +20,11 @@ const CategoryCard: React.FC<categoryCardProps> = ({category, isHome }) => {
                 width={200}
                 className="object-center object-contain size-24"
                 src={category?.image?.url}
-                alt={category?.name}
+                alt={category?.name?.ar}
               />
             </div>
             <div className="text-center">
-              <h2 className="text-base text-gray-600 mb-2">{category?.name}</h2>
+              <h2 className="text-base text-gray-600 mb-2">{category?.name?.ar}</h2>
             </div>
           </div>
         </div>

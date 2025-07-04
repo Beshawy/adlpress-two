@@ -5,16 +5,13 @@ import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { Badge } from "../ui/badge";
 
-const CartIcon = () => {
-  const { cartItems, toggleCart } = useCart();
+const CartIcon = ({ color }: { color?: string }) => {
+  const { cartItems } = useCart();
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <button
-      onClick={toggleCart}
-      className="relative flex items-center justify-center rounded-full p-2 transition-colors hover:bg-yellow-400 dark:hover:bg-yellow-500"
-    >
-      <ShoppingCart className="h-6 w-6 text-white" />
+    <span className="relative flex items-center justify-center">
+      <ShoppingCart className={`h-6 w-6 ${color === 'white' ? 'text-white' : color === 'black' ? 'text-black' : 'text-primary lg:text-white dark:text-yellow-400'}`} />
       {totalItems > 0 && (
         <Badge
           variant="destructive"
@@ -23,7 +20,7 @@ const CartIcon = () => {
           {totalItems}
         </Badge>
       )}
-    </button>
+    </span>
   );
 };
 

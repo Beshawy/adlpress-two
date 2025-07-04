@@ -25,7 +25,7 @@ export default function UserDrop({ user, isMobile = false }: UserDropProps) {
     await signOut({ callbackUrl: "/" })
   }
 
-  const userName = user?.name || "مستخدم"
+  const userName = user?.name || "User"
 
   const classForMobile =
     "flex gap-x-2 w-full whitespace-nowrap items-center rounded-md p-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50"
@@ -39,9 +39,9 @@ export default function UserDrop({ user, isMobile = false }: UserDropProps) {
           variant="ghost"
           className={`${isMobile ? classForMobile : classForDesktop} text-secondary hover:text-secondary`}
         >
-          <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-yellow-400 text-black">
-              <User className="h-5 w-5" />
+          <div className="flex items-center gap-2 ms-4">
+            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-transparent hover:bg-white transition-colors duration-200 group">
+              <User className="h-8 w-8 text-yellow-400 group-hover:text-yellow-400 transition-colors duration-200" />
             </div>
             <span className="text-yellow-400 font-medium">مرحباً، {userName}</span>
           </div>
@@ -51,19 +51,19 @@ export default function UserDrop({ user, isMobile = false }: UserDropProps) {
         <DropdownMenuItem asChild className="py-3 cursor-pointer">
           <Link href="/cart" className="flex items-center gap-2">
             <ShoppingBag className="h-5 w-5" />
-            <span>السلة</span>
+            <span>cart</span>
           </Link>
         </DropdownMenuItem>
         {/* <DropdownMenuItem asChild className="py-3 cursor-pointer">
           <Link href="/account/overview" className="flex items-center gap-2">
             <User className="h-5 w-5" />
-            <span>الحساب</span>
+            <span>Account</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild className="py-3 cursor-pointer">
           <Link href="/account/support" className="flex items-center gap-2">
             <HelpCircle className="h-5 w-5" />
-            <span>الدعم</span>
+            <span>Support</span>
           </Link>
         </DropdownMenuItem> */}
         <DropdownMenuSeparator />
@@ -72,7 +72,7 @@ export default function UserDrop({ user, isMobile = false }: UserDropProps) {
           className="py-3 cursor-pointer text-red-500 hover:text-red-600 hover:bg-red-50"
         >
           <LogOut className="h-5 w-5 mr-2" />
-          <span>تسجيل الخروج</span>
+          <span>Logout</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

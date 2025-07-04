@@ -3,112 +3,35 @@ import { ProductType } from "@/@types/api/product";
 import AlertCart from "@/components/cart/AlertCart";
 import ProductPrimary from "@/components/products/product-primary";
 import { Button } from "@/components/ui/button";
-import React, { useState } from "react";
-
-
-const productsData: ProductType[] = [
-  {
-    id: 1,
-    image: "/icons/products/1.png",
-    name: "Laptop v23",
-    description: "Laptop v23",
-    default_price: 300,
-    quantity: 1,
-    status: "active",
-    created_at: "2023-01-01",
-    updated_at: "2023-01-01",
-    price: 300,
-    oldPrice: 559,
-    rating: 4,
-    category: "Electronics",
-    sale: true,
-  },
-  {
-    id: 2,
-    image: "/icons/products/2.png",
-    name: "Laptop v23",
-    description: "Laptop v23",
-    default_price: 300,
-    quantity: 1,
-    status: "active",
-    created_at: "2023-01-01",
-    updated_at: "2023-01-01",
-    price: 300,
-    oldPrice: 559,
-    rating: 4,
-    category: "Electronics",
-    sale: true,
-  },
-  {
-    id: 3,
-    image: "/icons/products/3.png",
-    name: "Laptop v23",
-    description: "Laptop v23",
-    default_price: 300,
-    quantity: 1,
-    status: "active",
-    created_at: "2023-01-01",
-    updated_at: "2023-01-01",
-    price: 300,
-    oldPrice: 559,
-    rating: 4,
-    category: "Electronics",
-    sale: true,
-  },
-  {
-    id: 4,
-    image: "/icons/products/4.png",
-    name: "Laptop v23",
-    description: "Laptop v23",
-    default_price: 300,
-    quantity: 1,
-    status: "active",
-    created_at: "2023-01-01",
-    updated_at: "2023-01-01",
-    price: 300,
-    oldPrice: 559,
-    rating: 4,
-    category: "Electronics",
-    sale: true,
-  },
-  {
-    id: 5,
-    image: "/icons/products/5.png",
-    name: "Laptop v23",
-    description: "Laptop v23",
-    default_price: 300,
-    quantity: 1,
-    status: "active",
-    created_at: "2023-01-01",
-    updated_at: "2023-01-01",
-    price: 300,
-    oldPrice: 559,
-    rating: 4,
-    category: "Electronics",
-    sale: true,
-  },
-  {
-    id: 6,
-    image: "/icons/products/6.png",
-    name: "Laptop v23",
-    description: "Laptop v23",
-    default_price: 300,
-    quantity: 1,
-    status: "active",
-    created_at: "2023-01-01",
-    updated_at: "2023-01-01",
-    price: 300,
-    oldPrice: 559,
-    rating: 4,
-    category: "Electronics",
-    sale: true,
-  },
-];
-
+import React, { useState, useEffect } from "react";
+import { getFavorites, deleteFavorite } from "@/lib/api";
 
 export default function Wishlist() {
-  const [productInWishlist, setProductInWishlist] = useState(productsData);
+  const [productInWishlist, setProductInWishlist] = useState<any[]>([]);
   const [isOpenAlert, setIsOpenAlert] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoading(true);
+    getFavorites()
+      .then((data) => {
+        setProductInWishlist(Array.isArray(data) ? data : data.data || []);
+        setLoading(false);
+      })
+      .catch(() => {
+        setProductInWishlist([]);
+        setLoading(false);
+        setError("فشل جلب المفضلة");
+      });
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    await deleteFavorite(id);
+    setProductInWishlist((prev) => prev.filter((item) => item._id !== id));
+    setDeleteId(null);
+  };
 
   return (
     <div className="mt-24 container mx-auto px-4">
@@ -132,17 +55,17 @@ export default function Wishlist() {
       <div>
         {productInWishlist.length > 0 ? (
           <div className="mt-10 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-7 gap-4">
-            {/* {[
-              ...productInWishlist,
-              ...productInWishlist.reverse(),
-              ...productInWishlist.reverse(),
-              ...productInWishlist.reverse(),
-            ].map((item) => (
-              <div key={item.id + Math.random()}>
-                <ProductPrimary product={item} />
+            {productInWishlist.map((item) => (
+              <div key={item._id} className="relative">
+                <img src={item.product?.image?.[0]?.url || "/icons/products/1.png"} alt={item.product?.title?.ar || "منتج"} className="w-full h-40 object-contain rounded" />
+                <div className="mt-2 text-center font-bold">{item.product?.title?.ar || item.product?.title?.en || "اسم المنتج"}</div>
+                <div className="text-center text-primary">{item.product?.price} د.ك</div>
+                <button onClick={() => setDeleteId(item._id)} className="absolute top-2 left-2 bg-red-100 text-red-500 rounded-full p-2"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
               </div>
-            ))} */}
+            ))}
           </div>
+        ) : loading ? (
+          <div className="text-center py-12">جاري تحميل المفضلة...</div>
         ) : (
           <section className="bg-white dark:bg-gray-900 ">
             <div className="container flex mt-40 min-h-[80vh] px-6 py-12 mx-auto">
@@ -195,18 +118,17 @@ export default function Wishlist() {
         )}
       </div>
 
-      <AlertCart
-        isOpen={isOpenAlert}
-        setIsOpen={setIsOpenAlert}
-        text="Empty Wishlist"
-        msg="Are you sure you want to delete everything in Wishlist ?"
-        btnText="No, go back"
-        btnText2="Yes, delete"
-        action={() => {
-          setProductInWishlist([]);
-          setIsOpenAlert(false);
-        }}
-      />
+      {deleteId && (
+        <AlertCart
+          isOpen={!!deleteId}
+          setIsOpen={() => setDeleteId(null)}
+          msg={"هل أنت متأكد من حذف المنتج من المفضلة؟"}
+          text="حذف المنتج"
+          btnText="لا، تراجع"
+          btnText2="نعم، احذف"
+          action={() => handleDelete(deleteId)}
+        />
+      )}
     </div>
   );
 }

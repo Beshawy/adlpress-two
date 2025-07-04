@@ -3,13 +3,17 @@
 import { useState, useEffect } from "react";
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu } from "lucide-react";
+import { Menu, Heart } from "lucide-react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import LinkApp from "../global/LinkApp";
 import { CategoryHeader } from "./category-header";
 import SubHeaderInput from "./SubHeaderInput";
 import dynamic from "next/dynamic";
+import UserIcon from "../auth/UserIcon";
+import CartIcon from "../cart/CartIcon";
+import FavoriteBox from "../favorites/FavoriteBox";
+import { useCart } from "@/context/CartContext";
 
 const DynamicCartBox = dynamic(() => import("../cart/CartBox"), {
   ssr: false,
@@ -18,11 +22,18 @@ const DynamicLinksNavbar = dynamic(
   () => import("./LinksNavbar").then((mod) => mod.LinksNavbar),
   { ssr: false }
 );
+const DynamicUserIcon = dynamic(() => import("../auth/UserIcon"), {
+  ssr: false,
+});
 
 export default function HeaderApp() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [openFavorite, setOpenFavorite] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const pathname = usePathname();
   const isHome = pathname.split("/").length === 1 || pathname === "/";
+  const { openCart, isCartOpen } = useCart();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -34,14 +45,34 @@ export default function HeaderApp() {
     };
     window.addEventListener("scroll", handleScroll);
 
+    // تحقق من وجود التوكن
+    setIsLoggedIn(!!localStorage.getItem("token"));
+
+    // مستمع لتغير التوكن في localStorage
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "token") {
+        setIsLoggedIn(!!e.newValue);
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+
     return () => {
       window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("storage", handleStorage);
     };
   }, []);
+
+  // useEffect مستقل لمراقبة فتح البوكسات
+  useEffect(() => {
+    if (openFavorite || isCartOpen) {
+      setOpen(false);
+    }
+  }, [openFavorite, isCartOpen]);
 
   return (
     <div className="relative h-16">
       <DynamicCartBox />
+      <FavoriteBox open={openFavorite} onOpenChange={setOpenFavorite} />
       <header
         className={`px-4 md:px-6 fixed top-0 left-0 right-0 z-[4447] ${
           isScrolled
@@ -81,7 +112,37 @@ export default function HeaderApp() {
               <h1 className="text-lg font-bold">Adlpress</h1>
             </LinkApp>
           </div>
-          <SideBarForApp />
+          <SideBarForApp open={open} setOpen={setOpen} openFavorite={openFavorite} setOpenFavorite={setOpenFavorite} />
+          {isLoggedIn && (
+            <div className="flex items-center gap-x-4 hidden md:flex border-2 border-white rounded-xl transition-colors duration-200 hover:border-yellow-400 p-1 ml-0 mr-12">
+              <button
+                onClick={() => setOpenFavorite(true)}
+                className="flex items-center justify-center w-11 h-11 rounded-full bg-primary/80 hover:bg-yellow-400 transition-colors focus:outline-none shadow"
+                title="المفضلة"
+              >
+                <Heart className="h-7 w-7 text-white group-hover:text-yellow-400 transition-colors duration-200" />
+              </button>
+              <button
+                onClick={openCart}
+                className="flex items-center justify-center w-11 h-11 rounded-full bg-primary/80 hover:bg-secondary transition-colors focus:outline-none shadow"
+                title="السلة"
+              >
+                <CartIcon color="white" />
+              </button>
+              <button
+                className="flex items-center justify-center w-11 h-11 rounded-full bg-primary/80 hover:bg-secondary transition-colors focus:outline-none shadow"
+                title="الحساب"
+                tabIndex={0}
+                style={{ padding: 0 }}
+              >
+                <UserIcon color="white" />
+              </button>
+            </div>
+          )}
+        </div>
+        {/* محرك البحث للشاشات الصغيرة فقط */}
+        <div className="flex md:hidden w-full px-2 mt-2">
+          <SubHeaderInput />
         </div>
         <div className={""}>
           <CategoryHeader />
@@ -91,27 +152,65 @@ export default function HeaderApp() {
   );
 }
 
-function SideBarForApp() {
+function SideBarForApp(props: { open: boolean; setOpen: (open: boolean) => void; openFavorite: boolean; setOpenFavorite: (open: boolean) => void }) {
+  const isLoggedIn = !!localStorage.getItem("token");
+  const { openCart } = useCart();
   return (
-    <Sheet>
+    <Sheet open={props.open} onOpenChange={props.setOpen}>
       <SheetTrigger asChild>
         <Button variant="outline" size="icon" className="lg:hidden">
           <Menu className="h-6 w-6" />
           <span className="sr-only">تبديل قائمة التنقل</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="z-[81781454718]">
-        <LinkApp href="/" className="mr-6 flex items-center gap-x-2">
-          <Image
-            src={"/icons/logo.png"}
-            width={35}
-            height={70}
-            className="py-4"
-            alt={"logo"}
-          />
-          <h1 className="text-xl font-bold">Adlpress</h1>
-        </LinkApp>
-        <div className="grid gap-2 py-6">
+      <SheetContent side="left" className="z-[81781454718] flex flex-col justify-between">
+        <div>
+          <LinkApp href="/" className="mr-6 flex items-center gap-x-2 mb-6">
+            <Image
+              src={"/icons/logo.png"}
+              width={35}
+              height={70}
+              className="py-4"
+              alt={"logo"}
+            />
+            <h1 className="text-xl font-bold">Adlpress</h1>
+          </LinkApp>
+          {/* محرك البحث أسفل اللوجو مباشرة */}
+          <div className="w-full flex justify-center items-center px-2 mb-4">
+            <div className="w-full max-w-xs">
+              <SubHeaderInput isMobileSidebar />
+            </div>
+          </div>
+          {isLoggedIn && (
+            <div className="flex flex-col gap-4 mb-8">
+              <button
+                onClick={() => { props.setOpen(false); props.setOpenFavorite(true); }}
+                className="flex items-center gap-3 w-full px-3 py-2 rounded-lg bg-primary/80 hover:bg-yellow-400 transition-colors focus:outline-none shadow"
+                title="المفضلة"
+              >
+                <Heart className="h-6 w-6 text-white" />
+                <span className="text-base text-white">المفضلة</span>
+              </button>
+              <button
+                onClick={() => { props.setOpen(false); openCart(); }}
+                className="flex items-center gap-3 w-full px-3 py-2 rounded-lg bg-primary/80 hover:bg-secondary transition-colors focus:outline-none shadow"
+                title="السلة"
+              >
+                <CartIcon color="white" />
+                <span className="text-base text-white">السلة</span>
+              </button>
+              <button
+                onClick={() => { props.setOpen(false); }}
+                className="flex items-center gap-3 w-full px-3 py-2 rounded-lg bg-primary/80 hover:bg-secondary transition-colors focus:outline-none shadow"
+                title="الحساب"
+              >
+                <UserIcon color="white" />
+                <span className="text-base text-white">الحساب</span>
+              </button>
+            </div>
+          )}
+        </div>
+        <div className="mb-4 flex justify-center">
           <DynamicLinksNavbar isMobile />
         </div>
       </SheetContent>

@@ -56,7 +56,7 @@ export default function Page() {
       <div className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between text-start border-b border-b-gray-200">
           <h2 className="text-lg sm:text-2xl md:text-3xl text-primary font-bold border-b-2 border-primary flex pb-2 gap-x-2">
-            <span>Products</span>
+            <span>المنتجات </span>
             {/* <span className="text-secondary">{secondTitle}</span> */}
           </h2>
           {/* <div className="inline-block pb-2 items-center text-xs md:text-base">

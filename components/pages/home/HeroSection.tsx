@@ -1,52 +1,81 @@
 "use client"
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination, Autoplay } from "swiper/modules";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
+import { getHeroBanner } from "@/lib/api";
 
-const Carousel = () => {
+const HeroSection = () => {
+  const [banner, setBanner] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getHeroBanner()
+      .then((data) => {
+        console.log("Hero banner data:", data);
+        console.log("Data type:", typeof data);
+        console.log("Is array:", Array.isArray(data));
+        console.log("Data keys:", data ? Object.keys(data) : "No data");
+        
+        // البيانات تأتي ككائن واحد وليس كمصفوفة
+        if (data && typeof data === 'object' && data.image) {
+          console.log("Setting banner as object:", data);
+          setBanner(data);
+        } else if (Array.isArray(data) && data.length > 0) {
+          console.log("Setting banner as array item:", data[0]);
+          setBanner(data[0]);
+        } else {
+          console.log("No valid banner data found");
+        }
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching hero banner:", error);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="w-full h-[40vw] min-h-[180px] max-h-[320px] sm:h-[50vw] md:h-[50vh] flex items-center justify-center bg-gray-100">
+        <span className="text-lg text-gray-400">جاري تحميل الإعلان...</span>
+      </div>
+    );
+  }
+
+  if (!banner || !banner.image) {
+    return (
+      <div className="w-full h-[40vw] min-h-[180px] max-h-[320px] sm:h-[50vw] md:h-[50vh] flex items-center justify-center bg-gray-100">
+        <span className="text-lg text-gray-400">لا يوجد بنر إعلاني متاح</span>
+      </div>
+    );
+  }
+
   return (
-    <Swiper
-      modules={[Navigation, Pagination, Autoplay]}
-      spaceBetween={0}
-      slidesPerView={1}
-      loop={true}
-      autoplay={{ delay: 3000 }}
-      navigation={{
-        nextEl: ".swiper-button-next",
-        prevEl: ".swiper-button-prev",
-      }}
-      pagination={{
-        el: ".swiper-pagination",
-        clickable: true,
-        // bulletClass: "!bg-white !flex",
-        // currentClass: "!bg-white !flex",
-        bulletActiveClass: "active"
-      }}
-      className="relative"
-    >
-      {[...Array(4)].map((_, index) => (
-        <SwiperSlide key={index}>
-          <div className="w-full h-64 md:h-[50vh]">
-            <Image
-              className="h-full w-screen relative z-[1] object-cover"
-              src="/icons/auth/hero/hero.png"
-              width={1300}
-              height={1300}
-              alt=""
-            />
+    <div className="relative w-full h-[40vw] min-h-[180px] max-h-[320px] sm:h-[50vw] md:h-[50vh] flex items-center justify-center overflow-hidden mt-4">
+      <Image
+        className="h-full w-full object-cover z-[1]"
+        src={banner.image.url}
+        width={1300}
+        height={400}
+        alt="بنر إعلاني"
+        priority
+      />
+      {banner.url && (
+        <div className="absolute z-10 left-0 right-0 top-0 bottom-0 flex flex-col items-center justify-end bg-black/10 pb-12 pr-72">
+          <div className="w-full flex justify-start md:justify-center">
+            <a
+              href={banner.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400 hover:from-blue-500 hover:to-blue-700 text-white font-bold text-xs py-1 px-5 rounded shadow transition-all duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-yellow-300 drop-shadow border-2 border-yellow-300 hover:scale-105 mr-8 md:text-2xl md:py-4 md:px-12 md:rounded-full md:mr-0 md:font-extrabold md:shadow-2xl"
+              style={{ boxShadow: '0 3px 12px 0 rgba(0,0,0,0.12)' }}
+            >
+              اشترِ الآن
+            </a>
           </div>
-        </SwiperSlide>
-      ))}
-      {/* Navigation Buttons */}
-      <div className="swiper-button-prev text-white" aria-label="السابق"></div>
-      <div className="swiper-button-next text-white" aria-label="التالي"></div>
-      {/* Pagination Dots */}
-      <div className="swiper-pagination mb-4 [&>*]:!bg-white [&>.active]:!bg-secondary [&>*]:!opacity-100 [&>.active]:!px-2 [&>.active]:!rounded-md"></div>
-    </Swiper>
+        </div>
+      )}
+    </div>
   );
 };
 
-export default Carousel;
+export default HeroSection;

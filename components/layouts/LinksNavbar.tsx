@@ -2,10 +2,11 @@
 
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import { UserCircle } from "lucide-react";
+import { UserCircle, Heart } from "lucide-react";
 import { AuthDialogs } from "../auth/auth-dialogs";
 import UserDrop from "../auth/user-drop";
 import CartIcon from "../cart/CartIcon";
+import Link from "next/link";
 
 export function LinksNavbar({ isMobile = false }: { isMobile?: boolean }) {
   const classForMobile =
@@ -18,9 +19,7 @@ export function LinksNavbar({ isMobile = false }: { isMobile?: boolean }) {
 
   return (
     <>
-      <div className={`${isMobile ? classForMobile : classForDesktop}`}>
-        <CartIcon />
-      </div>
+      {/* تم حذف أيقونة السلة المكررة هنا */}
       {status === "authenticated" ? (
         <UserDrop user={{ name: user?.username }} isMobile={isMobile} />
       ) : (
@@ -28,8 +27,8 @@ export function LinksNavbar({ isMobile = false }: { isMobile?: boolean }) {
           trigger={
             <Button
               className={`bg-secondary text-black hover:bg-primary hover:text-secondary ${
-                isMobile ? classForMobile : classForDesktop
-              }`}
+                isMobile ? 'w-full flex justify-center ' + classForMobile : classForDesktop
+              } ${isMobile ? '' : 'mr-8'}`}
             >
               <UserCircle className="size-8 md:size-5" />
               <span className="w-auto">تسجيل الدخول / إنشاء حساب</span>

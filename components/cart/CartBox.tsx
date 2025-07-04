@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -24,7 +24,14 @@ const CartBox = () => {
     addToCart,
     decreaseQuantity,
     getCartTotal,
+    refreshCart,
   } = useCart();
+
+  useEffect(() => {
+    if (isCartOpen) {
+      refreshCart();
+    }
+  }, [isCartOpen]);
 
   return (
     <Sheet open={isCartOpen} onOpenChange={toggleCart}>
@@ -40,54 +47,40 @@ const CartBox = () => {
           <>
             <ScrollArea className="flex-1 pr-4">
               <div className="flex flex-col gap-6">
-                {cartItems.map((item) => (
+                {cartItems.map((item, idx) => (
                   <div
-                    key={item.id}
+                    key={(item.orderId && item.product._id) ? (item.orderId + '-' + item.product._id) : 'cartitem-' + idx}
                     className="flex w-full items-start justify-between gap-4"
                   >
                     <div className="flex flex-1 items-start gap-4">
-                      <div className="relative h-20 w-20 flex-shrink-0">
-                        <Image
-                          src={item.image}
-                          alt={item.name}
-                          layout="fill"
-                          objectFit="contain"
-                          className="rounded-md"
-                        />
-                      </div>
+                      {/* عرض الصورة فقط إذا كانت موجودة */}
+                      {item.product.image ? (
+                        <div className="relative h-20 w-20 flex-shrink-0">
+                          <Image
+                            src={item.product.image}
+                            alt={item.product.name || "منتج بدون اسم"}
+                            layout="fill"
+                            objectFit="contain"
+                            className="rounded-md"
+                          />
+                        </div>
+                      ) : null}
                       <div className="flex-1">
                         <p className="font-semibold break-words">
-                          {item.name}
+                          {item.product.name && item.product.name !== "منتج بدون اسم"
+                            ? item.product.name
+                            : "منتج بدون اسم"}
                         </p>
                         <p className="text-sm text-gray-500">
-                          ${item.price.toFixed(2)}
+                          ${item.product.price?.toFixed(2)}
                         </p>
-                        <div className="mt-2 flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={() => decreaseQuantity(item.id)}
-                          >
-                            <Minus className="h-4 w-4" />
-                          </Button>
-                          <span>{item.quantity}</span>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={() => addToCart(item)}
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
                       </div>
                     </div>
                     <Button
                       variant="ghost"
                       size="icon"
                       className="flex-shrink-0 text-red-500"
-                      onClick={() => removeFromCart(item.id)}
+                      onClick={() => removeFromCart(item.orderId)}
                     >
                       <Trash2 className="h-5 w-5" />
                     </Button>
@@ -101,8 +94,11 @@ const CartBox = () => {
                   <span>الإجمالي</span>
                   <span>${getCartTotal().toFixed(2)}</span>
                 </div>
-                <Link href="/cart/checkout" passHref>
-                  <Button className="w-full" onClick={toggleCart}>
+                <Link href="/checkout" passHref>
+                  <Button className="w-full" onClick={() => {
+                     localStorage.setItem("returnUrl", "/checkout");
+                       toggleCart();
+                        }}>
                     إتمام الشراء
                   </Button>
                 </Link>

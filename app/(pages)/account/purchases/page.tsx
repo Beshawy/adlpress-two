@@ -1,129 +1,116 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import Image from "next/image";
-import React from "react";
+"use client"
 
-export default function Purchases() {
-  return <div>المشتريات</div>;
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { getUserOrders } from "@/lib/api"
+import { useToast } from "@/hooks/use-toast"
+import { Package, Calendar, MapPin, CreditCard } from "lucide-react"
+import { Button } from "@/components/ui/button"
+
+export default function PurchasesPage() {
+  const [orders, setOrders] = useState([])
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
+  const { toast } = useToast()
+
+  useEffect(() => {
+    const checkAuthAndLoadOrders = async () => {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        router.push('/login')
+        return
+      }
+
+      try {
+        const userOrders = await getUserOrders()
+        setOrders(userOrders)
+      } catch (error: any) {
+        toast({
+          title: "خطأ في تحميل الطلبات",
+          description: error.message,
+          variant: "destructive"
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    checkAuthAndLoadOrders()
+  }, [router, toast])
+
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto p-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto p-4">
+      <div className="flex items-center gap-3 mb-8">
+        <Package className="w-8 h-8 text-primary" />
+        <h1 className="text-3xl font-bold">طلباتي</h1>
+      </div>
+
+      {orders.length === 0 ? (
+        <div className="text-center py-12">
+          <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold mb-2">لا توجد طلبات</h2>
+          <p className="text-gray-600 mb-6">لم تقم بأي طلب بعد</p>
+          <Button onClick={() => router.push('/')}>
+            التسوق الآن
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {orders.map((order: any, index: number) => (
+            <div key={index} className="bg-white rounded-lg shadow-md p-6">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold">طلب #{order._id?.slice(-8) || index + 1}</h3>
+                  <p className="text-gray-600">{order.status}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-bold text-primary">
+                    ${order.totalAmount?.toFixed(2) || '0.00'}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {new Date(order.orderDate).toLocaleDateString('ar-EG')}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {order.items?.map((item: any, itemIndex: number) => (
+                  <div key={itemIndex} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                    <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                      <Package className="w-6 h-6 text-gray-600" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium">{item.name}</p>
+                      <p className="text-sm text-gray-600">
+                        الكمية: {item.quantity} × ${item.price?.toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-4 pt-4 border-t space-y-2">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <MapPin className="w-4 h-4" />
+                  <span>{order.customerInfo?.address?.city}, {order.customerInfo?.address?.country}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <CreditCard className="w-4 h-4" />
+                  <span>{order.paymentMethod}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
-
-const StatusDeliveryError = () => (
-  <>
-    <svg
-      width={24}
-      height={24}
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M9.5 9.5L14.5 14.5"
-        stroke="#BB1818"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M14.5 9.5L9.5 14.5"
-        stroke="#BB1818"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M17 3H7C4.79086 3 3 4.79086 3 7V17C3 19.2091 4.79086 21 7 21H17C19.2091 21 21 19.2091 21 17V7C21 4.79086 19.2091 3 17 3Z"
-        stroke="#BB1818"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-    <span>Delayed</span>
-  </>
-);
-
-const StatusPaymentError = () => (
-  <>
-    <svg
-      width={24}
-      height={24}
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z"
-        stroke="#1D75CC"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M8 15L12 12V6"
-        stroke="#1D75CC"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-    <span>Pending</span>
-  </>
-);
-
-const StatusDeliverySuccess = () => (
-  <>
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z"
-        stroke="#1D75CC"
-        stroke-width="1.5"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      />
-      <path
-        d="M8 15L12 12V6"
-        stroke="#1D75CC"
-        stroke-width="1.5"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      />
-    </svg>
-
-    <span>In Progress</span>
-  </>
-);
-
-const StatusPaymentSuccess = () => (
-  <>
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M17 3H7C4.79086 3 3 4.79086 3 7V17C3 19.2091 4.79086 21 7 21H17C19.2091 21 21 19.2091 21 17V7C21 4.79086 19.2091 3 17 3Z"
-        stroke="#14D433"
-        stroke-width="1.5"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      />
-      <path
-        d="M8.5 12.2101L10.69 14.4001L15.5 9.6001"
-        stroke="#14D433"
-        stroke-width="1.5"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      />
-    </svg>
-
-    <span>Paid</span>
-  </>
-);

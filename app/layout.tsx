@@ -1,8 +1,11 @@
 "use client";
-import { SessionProvider } from "next-auth/react";
 import "./global.css";
 import React from "react";
-import { CartProvider } from "@/context/CartContext";
+import dynamic from "next/dynamic";
+
+const Providers = dynamic(() => import("@/components/Providers"), {
+  ssr: false,
+});
 
 export default function RootLayout({
   children,
@@ -10,18 +13,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ar" suppressHydrationWarning={true}>
+    <html lang="ar" suppressHydrationWarning>
       <head>
         <link rel="icon" href="/icons/logo.png" type="image/png" />
       </head>
-      <body
-        dir="rtl"
-        className="font-cairo"
-        suppressHydrationWarning={true}
-      >
-        <SessionProvider>
-          <CartProvider>{children}</CartProvider>
-        </SessionProvider>
+      <body dir="rtl" className="font-cairo" suppressHydrationWarning>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
