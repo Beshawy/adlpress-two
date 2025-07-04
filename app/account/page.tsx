@@ -150,10 +150,14 @@ export default function ProfilePage() {
       });
       router.push("/");
     } catch (error: any) {
-      console.error("خطأ في تسجيل الخروج:", error);
+      let msg = "حدث خطأ غير متوقع أثناء تسجيل الخروج";
+      if (error && typeof error.message === "string") {
+        msg = error.message;
+      }
+      console.error("خطأ في تسجيل الخروج:", msg);
       toast({
         title: "خطأ",
-        description: error.message,
+        description: msg,
         variant: "destructive",
       });
       // حتى لو فشل الطلب، نعيد توجيه المستخدم

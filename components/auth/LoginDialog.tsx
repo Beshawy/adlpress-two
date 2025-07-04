@@ -8,8 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { login } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
+import { useUser } from "@/components/Providers";
 
-export default function LoginDialog({ onSwitchToSignup, onClose }: { onSwitchToSignup: () => void, onClose?: () => void }) {
+export default function LoginDialog({ onSwitchToSignup, onSwitchToForgot, onClose }: { onSwitchToSignup: () => void, onSwitchToForgot?: () => void, onClose?: () => void }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -17,6 +18,7 @@ export default function LoginDialog({ onSwitchToSignup, onClose }: { onSwitchToS
   const [googleLoading, setGoogleLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const { setIsLoggedIn } = useUser();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,6 +48,7 @@ export default function LoginDialog({ onSwitchToSignup, onClose }: { onSwitchToS
         if (data.user && (data.user._id || data.user.id)) {
           localStorage.setItem('userId', data.user._id || data.user.id);
         }
+        setIsLoggedIn(true); // تحديث حالة تسجيل الدخول في UserContext
         toast({ title: "تم تسجيل الدخول بنجاح!", description: "سيتم تحويلك للصفحة المطلوبة." });
         
         if (onClose) onClose();
@@ -113,6 +116,15 @@ export default function LoginDialog({ onSwitchToSignup, onClose }: { onSwitchToS
             onChange={(e) => setPassword(e.target.value)}
             className="h-14 text-lg text-gray-500"
           />
+          <div className="text-left pt-2">
+            <button
+              type="button"
+              onClick={onSwitchToForgot}
+              className="text-blue-600 hover:underline text-sm font-medium"
+            >
+              هل نسيت كلمة السر؟
+            </button>
+          </div>
         </div>
         {error && <p className="text-red-500 text-sm">{error}</p>}
         <Button

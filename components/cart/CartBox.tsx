@@ -22,9 +22,9 @@ const CartBox = () => {
     cartItems,
     removeFromCart,
     addToCart,
-    decreaseQuantity,
     getCartTotal,
     refreshCart,
+    openCart,
   } = useCart();
 
   useEffect(() => {
@@ -37,7 +37,7 @@ const CartBox = () => {
     <Sheet open={isCartOpen} onOpenChange={toggleCart}>
       <SheetContent className="flex flex-col sm:max-w-lg pt-16">
         <SheetHeader>
-          <SheetTitle>سلة التسوق</SheetTitle>
+          <SheetTitle className="mt-6 sm:mt-0">سلة التسوق</SheetTitle>
         </SheetHeader>
         {cartItems.length === 0 ? (
           <div className="flex flex-1 items-center justify-center">

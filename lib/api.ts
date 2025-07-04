@@ -289,10 +289,14 @@ export async function addFavorite(productId: string) {
     if (!token) {
       throw new Error("لم يتم العثور على توكن تسجيل الدخول");
     }
-    // لا ترسل userId في البودي، السيرفر يستخرج المستخدم من التوكن
+    // جلب userId من بيانات المستخدم
+    const currentUser = await getCurrentUser();
+    const userId = currentUser._id || currentUser.id;
+    if (!userId) throw new Error("لم يتم العثور على معرف المستخدم");
+    // إرسال user و product معاً
     const response = await axios.post(
       `${API_FAVORITES}/add`,
-      { product: productId },
+      { user: userId, product: productId },
       getAuthHeaders()
     );
     return response.data;

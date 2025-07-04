@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { signOut } from "next-auth/react"
+import { useUser } from "@/components/Providers";
 
 type UserDropProps = {
   user: any
@@ -20,9 +21,11 @@ type UserDropProps = {
 
 export default function UserDrop({ user, isMobile = false }: UserDropProps) {
   const [open, setOpen] = useState(false)
+  const { setIsLoggedIn } = useUser();
 
   const handleSignOut = async () => {
-    await signOut({ callbackUrl: "/" })
+    await signOut({ callbackUrl: "/" });
+    setIsLoggedIn(false); // تحديث حالة تسجيل الدخول في UserContext
   }
 
   const userName = user?.name || "User"

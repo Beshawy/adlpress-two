@@ -97,6 +97,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   // إضافة منتج للسلة (مرة واحدة فقط)
   const addToCart = async (product: { _id: string; name: string; price: number; image: string }) => {
     console.log('🟠 addToCart called with:', product);
+    // تحقق من وجود بيانات المنتج وصحة الـ id
+    if (!product || !product._id) {
+      console.error('🚫 لا يمكن إضافة منتج غير معرف أو بدون id للسلة:', product);
+      return;
+    }
     // تحقق إذا كان المنتج موجود بالفعل
     if (cartItems.some((item) => item.product._id === product._id)) {
       setIsCartOpen(true); // فقط افتح السلة

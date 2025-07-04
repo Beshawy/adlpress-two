@@ -14,6 +14,7 @@ import UserIcon from "../auth/UserIcon";
 import CartIcon from "../cart/CartIcon";
 import FavoriteBox from "../favorites/FavoriteBox";
 import { useCart } from "@/context/CartContext";
+import { useUser } from "@/components/Providers";
 
 const DynamicCartBox = dynamic(() => import("../cart/CartBox"), {
   ssr: false,
@@ -30,7 +31,7 @@ export default function HeaderApp() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [openFavorite, setOpenFavorite] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isLoggedIn } = useUser();
   const pathname = usePathname();
   const isHome = pathname.split("/").length === 1 || pathname === "/";
   const { openCart, isCartOpen } = useCart();
@@ -44,21 +45,8 @@ export default function HeaderApp() {
       }
     };
     window.addEventListener("scroll", handleScroll);
-
-    // تحقق من وجود التوكن
-    setIsLoggedIn(!!localStorage.getItem("token"));
-
-    // مستمع لتغير التوكن في localStorage
-    const handleStorage = (e: StorageEvent) => {
-      if (e.key === "token") {
-        setIsLoggedIn(!!e.newValue);
-      }
-    };
-    window.addEventListener("storage", handleStorage);
-
     return () => {
       window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("storage", handleStorage);
     };
   }, []);
 

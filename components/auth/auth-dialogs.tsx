@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { SignupDialog } from "./SignupDialog";
 import LoginDialog from "./LoginDialog";
+import ForgotPasswordDialog from "./ForgotPasswordDialog";
 
 type AuthDialogProps = {
   trigger?: React.ReactNode;
@@ -16,7 +17,7 @@ type AuthDialogProps = {
 
 export function AuthDialogs({ trigger, defaultOpen = false, open=false, onClose }: AuthDialogProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen || open);
-  const [dialogType, setDialogType] = useState<"login" | "signup">("login");
+  const [dialogType, setDialogType] = useState<"login" | "signup" | "forgot">("login");
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
@@ -31,8 +32,13 @@ export function AuthDialogs({ trigger, defaultOpen = false, open=false, onClose 
     setDialogType("signup");
   };
 
+  const switchToForgot = () => {
+    setDialogType("forgot");
+  };
+
   const handleClose = () => {
     setIsOpen(false);
+    setDialogType("login"); // إعادة تعيين النوع دائماً عند الإغلاق
     if (onClose) onClose();
   };
 
@@ -53,9 +59,11 @@ export function AuthDialogs({ trigger, defaultOpen = false, open=false, onClose 
           <X className="h-6 w-6" />
         </button>
         {dialogType === "login" ? (
-          <LoginDialog onSwitchToSignup={switchToSignup} onClose={handleClose} />
-        ) : (
+          <LoginDialog onSwitchToSignup={switchToSignup} onSwitchToForgot={switchToForgot} onClose={handleClose} />
+        ) : dialogType === "signup" ? (
           <SignupDialog onSwitchToLogin={switchToLogin} />
+        ) : (
+          <ForgotPasswordDialog onSwitchToLogin={switchToLogin} />
         )}
       </DialogContent>
     </Dialog>
