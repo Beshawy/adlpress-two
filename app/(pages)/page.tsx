@@ -1,6 +1,6 @@
 "use client"
 import HeroSection from '@/components/pages/home/HeroSection'
-import ProductSection from '@/components/pages/home/ProductsSection';
+import ProductsSection from '@/components/pages/home/ProductsSection';
 import CategoriesSection from '@/components/pages/home/categoriesSection';
 import Image from 'next/image';
 import AxiosApp from '@/lib/axios';
@@ -23,7 +23,7 @@ export default function Page() {
         </div>
         <div>
           {sectionsTop?.map((section:any, index:any) => (
-            <ProductSection
+            <ProductsSection
               key={index}
               products={section.products}
               title={section.title}
@@ -37,7 +37,7 @@ export default function Page() {
             <Image className='rounded-none cursor-pointer' src={"/icons/home/3.png"} alt='' width={1000} height={1000} />
           </div>
           {sectionsBottom ?.map((section:any, index:any) => (
-            <ProductSection
+            <ProductsSection
               key={index}
               products={section.products}
               title={section.title}
