@@ -7,6 +7,11 @@
     "name": "Mohamed Abdelrahaman",
     "url": "https://mo7amed4a.vercel.app/"
   },
+  "browserslist": [
+    ">0.3%",
+    "not dead",
+    "not op_mini all"
+  ],
   "scripts": {
     "build": "next build",
     "dev": "next dev -H 0.0.0.0",
