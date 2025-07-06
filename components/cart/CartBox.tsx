@@ -47,7 +47,7 @@ const CartBox = () => {
     
     // الانتقال إلى صفحة الفوترة
     console.log("الانتقال إلى صفحة الفوترة...");
-    router.push("/cart/checkout/checkout");
+    router.push("/checkout");
   };
 
   return (
