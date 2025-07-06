@@ -20,6 +20,9 @@ export interface Product {
   }>;
 }
 
+// النوع الجديد للاستخدام العام
+export type ProductType = Product;
+
 // النوع القديم للتوافق مع الكود الموجود
 export interface LegacyProductType {
   id: number;

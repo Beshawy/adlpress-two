@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,19 +37,7 @@ export default function ProfilePage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  // جلب بيانات المستخدم عند تحميل الصفحة أو عند تغيير التوكن
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token || !isTokenValid()) {
-      router.push('/');
-      return;
-    }
-    fetchUserData();
-    // إعادة تحميل البيانات عند تغيير التوكن (مثلاً بعد تسجيل الدخول)
-    // window.addEventListener("storage", ... ) يمكن إضافتها إذا أردت دعم التحديث الفوري بين التبويبات
-  }, [router, fetchUserData]);
-
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
     try {
       setLoading(true);
       const userData = await getCurrentUser();
@@ -78,7 +66,19 @@ export default function ProfilePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [router, toast]);
+
+  // جلب بيانات المستخدم عند تحميل الصفحة أو عند تغيير التوكن
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token || !isTokenValid()) {
+      router.push('/');
+      return;
+    }
+    fetchUserData();
+    // إعادة تحميل البيانات عند تغيير التوكن (مثلاً بعد تسجيل الدخول)
+    // window.addEventListener("storage", ... ) يمكن إضافتها إذا أردت دعم التحديث الفوري بين التبويبات
+  }, [fetchUserData]);
 
   const handleEdit = () => {
     setEditMode(true);
