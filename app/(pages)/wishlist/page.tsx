@@ -1,7 +1,6 @@
 "use client";
 import { ProductType } from "@/@types/api/product";
 import AlertCart from "@/components/cart/AlertCart";
-import ProductPrimary from "@/components/products/product-primary";
 import { Button } from "@/components/ui/button";
 import React, { useState, useEffect } from "react";
 import { getFavorites, deleteFavorite } from "@/lib/api";
