@@ -12,25 +12,34 @@ export default function Wishlist() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const isLoggedIn = !!localStorage.getItem("token");
 
   useEffect(() => {
     setLoading(true);
-    getFavorites()
-      .then((data) => {
-        setProductInWishlist(Array.isArray(data) ? data : data.data || []);
-        setLoading(false);
-      })
-      .catch(() => {
-        setProductInWishlist([]);
-        setLoading(false);
-        setError("فشل جلب المفضلة");
-      });
-  }, []);
+    if (isLoggedIn) {
+      getFavorites()
+        .then((data) => {
+          setProductInWishlist(Array.isArray(data) ? data : data.data || []);
+          setLoading(false);
+        })
+        .catch(() => {
+          setProductInWishlist([]);
+          setLoading(false);
+          setError("فشل جلب المفضلة");
+        });
+    } else {
+      setProductInWishlist([]);
+      setLoading(false);
+    }
+  }, [isLoggedIn]);
 
   const handleDelete = async (id: string) => {
     await deleteFavorite(id);
     setProductInWishlist((prev) => prev.filter((item) => item._id !== id));
     setDeleteId(null);
+    
+    // إرسال حدث لتحديث العداد في الهيدر
+    window.dispatchEvent(new CustomEvent('favoritesUpdated'));
   };
 
   return (

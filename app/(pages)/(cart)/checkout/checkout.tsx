@@ -42,7 +42,7 @@ const CheckoutPage = () => {
     },
   });
 
-  const onSubmit = async (values) => {
+  const onSubmit = async (values: any) => {
     // فقط رسالة وهمية بدون أي اتصال API
     toast({ title: "تم الطلب (عرض تجريبي فقط)" });
     router.push("/success");

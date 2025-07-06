@@ -8,6 +8,7 @@ import Image from "next/image"
 import { getAllCategories } from "@/lib/api"
 import { CategoriesType } from "@/@types/api/categories"
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog"
+import { VisuallyHidden } from "../ui/visually-hidden"
 
 export default function Footer() {
   const [email, setEmail] = useState("")
@@ -210,7 +211,9 @@ export default function Footer() {
         </button>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogContent>
-            <DialogTitle className="sr-only">نموذج الشكوى</DialogTitle>
+            <DialogTitle>
+              <VisuallyHidden>نموذج الشكوى</VisuallyHidden>
+            </DialogTitle>
             <form onSubmit={handleSubmitForm} className="flex flex-col gap-4">
               <input
                 type="text"

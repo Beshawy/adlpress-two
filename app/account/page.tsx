@@ -41,7 +41,7 @@ export default function ProfilePage() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token || !isTokenValid()) {
-      router.push('/login');
+      router.push('/');
       return;
     }
     fetchUserData();
@@ -73,7 +73,7 @@ export default function ProfilePage() {
         variant: "destructive",
       });
       if (error.message.includes("توكن")) {
-        router.push("/login");
+        router.push("/");
       }
     } finally {
       setLoading(false);
@@ -196,8 +196,8 @@ export default function ProfilePage() {
             <User className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h2 className="text-xl font-semibold mb-2">لم يتم العثور على بيانات المستخدم</h2>
             <p className="text-gray-600 mb-4">يرجى تسجيل الدخول مرة أخرى</p>
-            <Button onClick={() => router.push("/login")}>
-              تسجيل الدخول
+            <Button onClick={() => router.push("/")}>
+              العودة للصفحة الرئيسية
             </Button>
           </div>
         </div>

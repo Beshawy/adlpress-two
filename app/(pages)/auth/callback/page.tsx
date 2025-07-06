@@ -41,8 +41,18 @@ export default function AuthCallback() {
         const response = await handleGoogleCallback(code)
         
         if (response.token) {
-          // حفظ التوكن
-          localStorage.setItem('token', response.token)
+          // حفظ بيانات المستخدم إذا كانت موجودة
+          if (response.user) {
+            if (response.user._id || response.user.id) {
+              localStorage.setItem('userId', response.user._id || response.user.id);
+            }
+            if (response.user.username) {
+              localStorage.setItem('username', response.user.username);
+            }
+          }
+          
+          // إرسال حدث لتحديث حالة تسجيل الدخول في المكونات الأخرى
+          window.dispatchEvent(new Event('authStateChanged'));
           
           setStatus('success')
           
@@ -110,8 +120,8 @@ export default function AuthCallback() {
           <h1 className="text-2xl font-bold mb-2 text-red-600">حدث خطأ</h1>
           <p className="text-gray-600 mb-6">{errorMessage}</p>
           <div className="space-y-3">
-            <Button onClick={() => router.push('/login')}>
-              المحاولة مرة أخرى
+            <Button onClick={() => router.push('/')}>
+              العودة للصفحة الرئيسية
             </Button>
             <Button variant="outline" onClick={() => router.push('/')}>
               العودة للصفحة الرئيسية

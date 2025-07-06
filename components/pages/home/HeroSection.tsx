@@ -10,25 +10,26 @@ const HeroSection = () => {
   useEffect(() => {
     getHeroBanner()
       .then((data) => {
-        console.log("Hero banner data:", data);
-        console.log("Data type:", typeof data);
-        console.log("Is array:", Array.isArray(data));
-        console.log("Data keys:", data ? Object.keys(data) : "No data");
-        
         // البيانات تأتي ككائن واحد وليس كمصفوفة
         if (data && typeof data === 'object' && data.image) {
-          console.log("Setting banner as object:", data);
           setBanner(data);
         } else if (Array.isArray(data) && data.length > 0) {
-          console.log("Setting banner as array item:", data[0]);
           setBanner(data[0]);
         } else {
-          console.log("No valid banner data found");
+          // استخدام البيانات الافتراضية
+          setBanner({
+            image: { url: "/icons/home/1.png" },
+            url: "#"
+          });
         }
         setLoading(false);
       })
       .catch((error) => {
-        console.error("Error fetching hero banner:", error);
+        // في حالة الخطأ، استخدم البيانات الافتراضية
+        setBanner({
+          image: { url: "/icons/home/1.png" },
+          url: "#"
+        });
         setLoading(false);
       });
   }, []);

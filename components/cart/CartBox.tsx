@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { X, Plus, Minus, Trash2 } from "lucide-react";
 import Image from "next/image";
 import {
@@ -16,6 +17,7 @@ import {
 import { ScrollArea } from "../ui/scroll-area";
 
 const CartBox = () => {
+  const router = useRouter();
   const {
     isCartOpen,
     toggleCart,
@@ -32,6 +34,21 @@ const CartBox = () => {
       refreshCart();
     }
   }, [isCartOpen]);
+
+  const handleCheckout = () => {
+    // التحقق من وجود منتجات في السلة
+    if (cartItems.length === 0) {
+      console.log("السلة فارغة، لا يمكن الانتقال إلى الفوترة");
+      return;
+    }
+
+    // إغلاق السلة أولاً
+    toggleCart();
+    
+    // الانتقال إلى صفحة الفوترة
+    console.log("الانتقال إلى صفحة الفوترة...");
+    router.push("/cart/checkout/checkout");
+  };
 
   return (
     <Sheet open={isCartOpen} onOpenChange={toggleCart}>
@@ -94,14 +111,13 @@ const CartBox = () => {
                   <span>الإجمالي</span>
                   <span>${getCartTotal().toFixed(2)}</span>
                 </div>
-                <Link href="/checkout" passHref>
-                  <Button className="w-full" onClick={() => {
-                     localStorage.setItem("returnUrl", "/checkout");
-                       toggleCart();
-                        }}>
-                    إتمام الشراء
-                  </Button>
-                </Link>
+                   <Button
+                  className="w-full"
+                  onClick={handleCheckout}
+                  disabled={cartItems.length === 0}
+                >
+                  إتمام الشراء
+                </Button>
               </div>
             </SheetFooter>
           </>

@@ -5,6 +5,7 @@ import CategoriesSection from '@/components/pages/home/categoriesSection';
 import Image from 'next/image';
 import AxiosApp from '@/lib/axios';
 import useFetch from '@/hooks/use-fetch';
+import ProductModal from '@/components/pages/home/ProductModal';
 
 export default function Page() {
   const {data} = useFetch(`/home-page?populate[sections][populate][products][populate]=*`)

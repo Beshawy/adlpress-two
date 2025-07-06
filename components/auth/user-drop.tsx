@@ -11,8 +11,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { signOut } from "next-auth/react"
+import { logout } from "@/lib/api"
 import { useUser } from "@/components/Providers";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 
 type UserDropProps = {
   user: any
@@ -22,13 +24,34 @@ type UserDropProps = {
 export default function UserDrop({ user, isMobile = false }: UserDropProps) {
   const [open, setOpen] = useState(false)
   const { setIsLoggedIn } = useUser();
+  const router = useRouter();
+  const { toast } = useToast();
 
   const handleSignOut = async () => {
-    await signOut({ callbackUrl: "/" });
+    try {
+      await logout();
     setIsLoggedIn(false); // تحديث حالة تسجيل الدخول في UserContext
+      
+      // إرسال حدث لتحديث حالة تسجيل الدخول في المكونات الأخرى
+      window.dispatchEvent(new Event('authStateChanged'));
+      
+      toast({
+        title: "تم تسجيل الخروج بنجاح",
+        description: "تم تسجيل خروجك من الحساب"
+      });
+      
+      router.push("/");
+    } catch (error: any) {
+      console.error("خطأ في تسجيل الخروج:", error);
+      toast({
+        title: "خطأ",
+        description: error.message || "حدث خطأ أثناء تسجيل الخروج",
+        variant: "destructive"
+      });
+    }
   }
 
-  const userName = user?.name || "User"
+  const userName = user?.name || "مستخدم"
 
   const classForMobile =
     "flex gap-x-2 w-full whitespace-nowrap items-center rounded-md p-2 text-sm font-medium transition-colors hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50"
@@ -54,28 +77,28 @@ export default function UserDrop({ user, isMobile = false }: UserDropProps) {
         <DropdownMenuItem asChild className="py-3 cursor-pointer">
           <Link href="/cart" className="flex items-center gap-2">
             <ShoppingBag className="h-5 w-5" />
-            <span>cart</span>
-          </Link>
-        </DropdownMenuItem>
-        {/* <DropdownMenuItem asChild className="py-3 cursor-pointer">
-          <Link href="/account/overview" className="flex items-center gap-2">
-            <User className="h-5 w-5" />
-            <span>Account</span>
+            <span>السلة</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild className="py-3 cursor-pointer">
-          <Link href="/account/support" className="flex items-center gap-2">
-            <HelpCircle className="h-5 w-5" />
-            <span>Support</span>
+          <Link href="/account" className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            <span>الملف الشخصي</span>
           </Link>
-        </DropdownMenuItem> */}
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild className="py-3 cursor-pointer">
+          <Link href="/account/overview" className="flex items-center gap-2">
+            <HelpCircle className="h-5 w-5" />
+            <span>الطلبات السابقة</span>
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={handleSignOut}
           className="py-3 cursor-pointer text-red-500 hover:text-red-600 hover:bg-red-50"
         >
           <LogOut className="h-5 w-5 mr-2" />
-          <span>Logout</span>
+          <span>تسجيل الخروج</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -4,6 +4,7 @@ import { getAllProducts, addFavorite, deleteFavorite, getFavorites } from "@/lib
 import { Heart, ShoppingCart } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { AuthDialogs } from "@/components/auth/auth-dialogs";
+import ProductDetails from './ProductDetails';
 
 const ProductsSection: React.FC = () => {
   const [products, setProducts] = useState<any[]>([]);
@@ -14,6 +15,7 @@ const ProductsSection: React.FC = () => {
   const { addToCart, openCart } = useCart();
   const [showLogin, setShowLogin] = useState(false);
   const isLoggedIn = !!localStorage.getItem("token");
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
   console.log("🟡 دخل المكون ProductsSection");
 
@@ -44,12 +46,16 @@ const ProductsSection: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    getFavorites()
-      .then((data) => {
-        setFavorites(Array.isArray(data) ? data : data.data || []);
-      })
-      .catch(() => setFavorites([]));
-  }, []);
+    if (isLoggedIn) {
+      getFavorites()
+        .then((data) => {
+          setFavorites(Array.isArray(data) ? data : data.data || []);
+        })
+        .catch(() => setFavorites([]));
+    } else {
+      setFavorites([]);
+    }
+  }, [isLoggedIn]);
 
   const isInFavorites = (productId: string) => favorites.some((fav) => fav._id === productId);
 
@@ -68,6 +74,9 @@ const ProductsSection: React.FC = () => {
         const updated = await getFavorites();
         setFavorites(Array.isArray(updated) ? updated : updated.data || []);
       }
+      
+      // إرسال حدث لتحديث العداد في الهيدر
+      window.dispatchEvent(new CustomEvent('favoritesUpdated'));
     } catch (e) {}
     setFavLoading(null);
   };
@@ -121,9 +130,18 @@ const ProductsSection: React.FC = () => {
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {products.map((product, index) => (
-              <div key={product._id || index} className="relative border rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow bg-white">
+              <div
+                key={`product-${product._id || product.id || index}`}
+                className="relative border rounded-lg shadow-md p-4 hover:shadow-lg hover:border-black transition-all duration-200 bg-white cursor-pointer"
+                onClick={() => {
+                  console.log("🖱️ تم الضغط على المنتج:", product._id, product.title?.ar);
+                  console.log("🖱️ المنتج الكامل:", product);
+                  setSelectedProduct(product);
+                  console.log("🖱️ selectedProduct تم تعيينه:", product);
+                }}
+              >
                 {/* أيقونات السلة والمفضلة تحت بعض */}
-                <div className="absolute top-2 right-2 flex flex-col gap-2 z-10">
+                <div className="absolute top-2 right-2 flex flex-col gap-2 z-10" onClick={e => e.stopPropagation()}>
                   {/* زر المفضلة */}
                   <button
                     onClick={() => {
@@ -146,8 +164,13 @@ const ProductsSection: React.FC = () => {
                         setShowLogin(true);
                         return;
                       }
+                      const productId = product._id || product.id;
+                      if (!productId) {
+                        console.error('🚫 لا يمكن إضافة منتج بدون id:', product);
+                        return;
+                      }
                       addToCart({
-                        _id: product._id,
+                        _id: productId,
                         name: product?.title?.ar || product?.title?.en || "اسم المنتج",
                         price: product?.sale && product.sale > 0
                           ? Number((product.price - (product.price * product.sale / 100)).toFixed(2))
@@ -206,6 +229,12 @@ const ProductsSection: React.FC = () => {
       </div>
       {/* Dialog تسجيل الدخول */}
       {showLogin && <AuthDialogs open={showLogin} defaultOpen={true} onClose={() => setShowLogin(false)} />}
+      {selectedProduct && (
+        <>
+          {console.log("🎯 ProductDetails سيتم عرضه للمنتج:", selectedProduct._id)}
+          <ProductDetails product={selectedProduct} onClose={() => setSelectedProduct(null)} />
+        </>
+      )}
     </section>
   );
 };

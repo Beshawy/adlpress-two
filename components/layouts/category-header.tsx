@@ -45,7 +45,6 @@ export function CategoryHeader() {
         <NavigationMenuList className="flex justify-start">
           <NavigationMenuItem className="text-secondary">
             {/* {JSON.stringify(data)} */}
-            <NavigationMenuTrigger className={` ${'!text-secondary'}`}>جميع الفئات</NavigationMenuTrigger>
             <NavigationMenuContent className="flex gap-4 p-4 md:w-[95vw]">
               <div className="w-[300px]">
                 {categoryParent?.data?.map((item:any, index:number) => <Button onClick={() => setSelectParent(item.child_ones)} onMouseEnter={() => setSelectParent(item.child_ones)} key={index} variant={'ghost'} className="w-full flex justify-between h-14 rounded-none">

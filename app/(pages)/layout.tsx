@@ -1,5 +1,4 @@
 import HeaderApp from "@/components/layouts/Header";
-import FooterApp from "@/components/layouts/Footer";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as ToastApp } from "react-hot-toast";
 import NextTopLoader from "nextjs-toploader";
@@ -28,7 +27,6 @@ export default async function RootLayout({
       <HeaderApp />
       <div className="-mt-4 md:mt-4"></div>
       {children}
-      <FooterApp />
     </>
   );
 }

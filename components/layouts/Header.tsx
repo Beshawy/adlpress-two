@@ -15,6 +15,7 @@ import CartIcon from "../cart/CartIcon";
 import FavoriteBox from "../favorites/FavoriteBox";
 import { useCart } from "@/context/CartContext";
 import { useUser } from "@/components/Providers";
+import { getFavorites } from "@/lib/api";
 
 const DynamicCartBox = dynamic(() => import("../cart/CartBox"), {
   ssr: false,
@@ -31,10 +32,11 @@ export default function HeaderApp() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [openFavorite, setOpenFavorite] = useState(false);
+  const [favorites, setFavorites] = useState<any[]>([]);
   const { isLoggedIn } = useUser();
   const pathname = usePathname();
   const isHome = pathname.split("/").length === 1 || pathname === "/";
-  const { openCart, isCartOpen } = useCart();
+  const { openCart, isCartOpen, cartItems } = useCart();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -50,12 +52,64 @@ export default function HeaderApp() {
     };
   }, []);
 
+  // جلب المفضلة عند تسجيل الدخول
+  useEffect(() => {
+    if (isLoggedIn) {
+      getFavorites()
+        .then((data) => {
+          setFavorites(Array.isArray(data) ? data : data.data || []);
+        })
+        .catch(() => setFavorites([]));
+    } else {
+      setFavorites([]);
+    }
+  }, [isLoggedIn]);
+
+  // مراقبة تغييرات المفضلة من النوافذ الأخرى
+  useEffect(() => {
+    const handleFavoritesChange = () => {
+      if (isLoggedIn) {
+        getFavorites()
+          .then((data) => {
+            setFavorites(Array.isArray(data) ? data : data.data || []);
+          })
+          .catch(() => setFavorites([]));
+      }
+    };
+
+    // إضافة مستمع للحدث المخصص
+    window.addEventListener('favoritesUpdated', handleFavoritesChange);
+    
+    return () => {
+      window.removeEventListener('favoritesUpdated', handleFavoritesChange);
+    };
+  }, [isLoggedIn]);
+
+  // مراقبة تغييرات السلة من النوافذ الأخرى
+  useEffect(() => {
+    const handleCartChange = () => {
+      // تحديث السلة من السياق
+      // لا نحتاج لفعل شيء هنا لأن cartItems يتم تحديثه تلقائياً من السياق
+    };
+
+    // إضافة مستمع للحدث المخصص
+    window.addEventListener('cartUpdated', handleCartChange);
+    
+    return () => {
+      window.removeEventListener('cartUpdated', handleCartChange);
+    };
+  }, []);
+
   // useEffect مستقل لمراقبة فتح البوكسات
   useEffect(() => {
     if (openFavorite || isCartOpen) {
       setOpen(false);
     }
   }, [openFavorite, isCartOpen]);
+
+  // حساب عدد العناصر في السلة
+  const cartItemsCount = cartItems.length;
+  const favoritesCount = favorites.length;
 
   return (
     <div className="relative h-16">
@@ -105,17 +159,27 @@ export default function HeaderApp() {
             <div className="flex items-center gap-x-4 hidden md:flex border-2 border-white rounded-xl transition-colors duration-200 hover:border-yellow-400 p-1 ml-0 mr-12">
               <button
                 onClick={() => setOpenFavorite(true)}
-                className="flex items-center justify-center w-11 h-11 rounded-full bg-primary/80 hover:bg-yellow-400 transition-colors focus:outline-none shadow"
+                className="relative flex items-center justify-center w-11 h-11 rounded-full bg-primary/80 hover:bg-yellow-400 transition-colors focus:outline-none shadow"
                 title="المفضلة"
               >
                 <Heart className="h-7 w-7 text-white group-hover:text-yellow-400 transition-colors duration-200" />
+                {favoritesCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                    {favoritesCount > 99 ? '99+' : favoritesCount}
+                  </span>
+                )}
               </button>
               <button
                 onClick={openCart}
-                className="flex items-center justify-center w-11 h-11 rounded-full bg-primary/80 hover:bg-secondary transition-colors focus:outline-none shadow"
+                className="relative flex items-center justify-center w-11 h-11 rounded-full bg-primary/80 hover:bg-secondary transition-colors focus:outline-none shadow"
                 title="السلة"
               >
                 <CartIcon color="white" />
+                {cartItemsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                    {cartItemsCount > 99 ? '99+' : cartItemsCount}
+                  </span>
+                )}
               </button>
               <button
                 className="flex items-center justify-center w-11 h-11 rounded-full bg-primary/80 hover:bg-secondary transition-colors focus:outline-none shadow"
@@ -141,8 +205,45 @@ export default function HeaderApp() {
 }
 
 function SideBarForApp(props: { open: boolean; setOpen: (open: boolean) => void; openFavorite: boolean; setOpenFavorite: (open: boolean) => void }) {
-  const isLoggedIn = !!localStorage.getItem("token");
-  const { openCart } = useCart();
+  const { isLoggedIn } = useUser();
+  const { openCart, cartItems } = useCart();
+  const [favorites, setFavorites] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      getFavorites()
+        .then((data) => {
+          setFavorites(Array.isArray(data) ? data : data.data || []);
+        })
+        .catch(() => setFavorites([]));
+    } else {
+      setFavorites([]);
+    }
+  }, [isLoggedIn]);
+
+  // مراقبة تغييرات المفضلة من النوافذ الأخرى
+  useEffect(() => {
+    const handleFavoritesChange = () => {
+      if (isLoggedIn) {
+        getFavorites()
+          .then((data) => {
+            setFavorites(Array.isArray(data) ? data : data.data || []);
+          })
+          .catch(() => setFavorites([]));
+      }
+    };
+
+    // إضافة مستمع للحدث المخصص
+    window.addEventListener('favoritesUpdated', handleFavoritesChange);
+    
+    return () => {
+      window.removeEventListener('favoritesUpdated', handleFavoritesChange);
+    };
+  }, [isLoggedIn]);
+
+  const cartItemsCount = cartItems.length;
+  const favoritesCount = favorites.length;
+
   return (
     <Sheet open={props.open} onOpenChange={props.setOpen}>
       <SheetTrigger asChild>
@@ -173,19 +274,29 @@ function SideBarForApp(props: { open: boolean; setOpen: (open: boolean) => void;
             <div className="flex flex-col gap-4 mb-8">
               <button
                 onClick={() => { props.setOpen(false); props.setOpenFavorite(true); }}
-                className="flex items-center gap-3 w-full px-3 py-2 rounded-lg bg-primary/80 hover:bg-yellow-400 transition-colors focus:outline-none shadow"
+                className="relative flex items-center gap-3 w-full px-3 py-2 rounded-lg bg-primary/80 hover:bg-yellow-400 transition-colors focus:outline-none shadow"
                 title="المفضلة"
               >
                 <Heart className="h-6 w-6 text-white" />
                 <span className="text-base text-white">المفضلة</span>
+                {favoritesCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                    {favoritesCount > 99 ? '99+' : favoritesCount}
+                  </span>
+                )}
               </button>
               <button
                 onClick={() => { props.setOpen(false); openCart(); }}
-                className="flex items-center gap-3 w-full px-3 py-2 rounded-lg bg-primary/80 hover:bg-secondary transition-colors focus:outline-none shadow"
+                className="relative flex items-center gap-3 w-full px-3 py-2 rounded-lg bg-primary/80 hover:bg-secondary transition-colors focus:outline-none shadow"
                 title="السلة"
               >
                 <CartIcon color="white" />
                 <span className="text-base text-white">السلة</span>
+                {cartItemsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                    {cartItemsCount > 99 ? '99+' : cartItemsCount}
+                  </span>
+                )}
               </button>
               <button
                 onClick={() => { props.setOpen(false); }}

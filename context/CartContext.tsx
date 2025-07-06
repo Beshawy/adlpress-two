@@ -8,7 +8,7 @@ import React, {
   ReactNode,
 } from "react";
 
-import { addOrder, deleteOrder, getUserOrders, getProduct } from "@/lib/api";
+import { addToOrder, deleteOrder, getUserOrders } from "@/lib/api";
 
 // CartItem الجديد يحمل orderId وبيانات المنتج
 export interface CartItem {
@@ -42,10 +42,32 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  // جلب السلة من الباك اند عند بدء التطبيق
+  // فحص تسجيل الدخول
+  const isLoggedIn = typeof window !== 'undefined' ? !!localStorage.getItem('token') : false;
+
+  // جلب السلة من الباك اند عند بدء التطبيق وعند تغيير حالة تسجيل الدخول
   useEffect(() => {
-    refreshCart();
-  }, []);
+    if (isLoggedIn) {
+      refreshCart();
+    } else {
+      setCartItems([]);
+    }
+  }, [isLoggedIn]);
+
+  // مراقبة تغييرات حالة تسجيل الدخول
+  useEffect(() => {
+    const handleAuthChange = () => {
+      const currentLoginState = !!localStorage.getItem('token');
+      if (currentLoginState !== isLoggedIn) {
+        // سيتم إعادة تشغيل useEffect أعلاه تلقائياً
+      }
+    };
+
+    window.addEventListener('authStateChanged', handleAuthChange);
+    return () => {
+      window.removeEventListener('authStateChanged', handleAuthChange);
+    };
+  }, [isLoggedIn]);
 
   // حفظ السلة في localStorage للسرعة فقط
   useEffect(() => {
@@ -54,6 +76,13 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   // جلب السلة من الباك اند
   const refreshCart = async () => {
+    // تحقق من تسجيل الدخول أولاً
+    if (!isLoggedIn) {
+      console.log('🔒 المستخدم غير مسجل دخول، لن يتم جلب السلة');
+      setCartItems([]);
+      return;
+    }
+
     try {
       const response = await getUserOrders();
       console.log('🟢 getUserOrders response:', response);
@@ -61,28 +90,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       console.log('🟡 orders after extraction:', orders);
       let items: CartItem[] = [];
       if (Array.isArray(orders)) {
-        items = await Promise.all(
-          orders.map(async (order: any) => {
-            let productId = typeof order.product === "string"
-              ? order.product
-              : order.product?._id || order.product?.id;
-            let productData = null;
-            try {
-              productData = await getProduct(productId);
-            } catch {
-              productData = { _id: productId, name: "منتج بدون اسم", price: 0, image: "" };
-            }
-            return {
-              orderId: order._id,
-              product: {
-                _id: productData._id,
-                name: productData.name || productData.title?.ar || "منتج بدون اسم",
-                price: productData.price || 0,
-                image: productData.image?.[0]?.url || "",
-              },
-            };
-          })
-        );
+        items = orders.map((order: any) => {
+          return {
+            orderId: order.id,
+            product: {
+              _id: order.id,
+              name: order.title?.ar || order.title?.en || "منتج بدون اسم",
+              price: order.price || 0,
+              image: order.image?.[0]?.url || "",
+            },
+          };
+        });
       }
       console.log('🔵 items after build:', items);
       setCartItems(items);
@@ -90,6 +108,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         console.log('🟣 cartItems after set:', items);
       }, 500);
     } catch (error) {
+      console.error('Error refreshing cart:', error);
       setCartItems([]);
     }
   };
@@ -97,24 +116,40 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   // إضافة منتج للسلة (مرة واحدة فقط)
   const addToCart = async (product: { _id: string; name: string; price: number; image: string }) => {
     console.log('🟠 addToCart called with:', product);
+    
+    // تحقق من تسجيل الدخول أولاً
+    if (!isLoggedIn) {
+      alert('يرجى تسجيل الدخول أولاً');
+      return;
+    }
+    
     // تحقق من وجود بيانات المنتج وصحة الـ id
     if (!product || !product._id) {
       console.error('🚫 لا يمكن إضافة منتج غير معرف أو بدون id للسلة:', product);
       return;
     }
+    console.log('🟠 سيتم إرسال هذا الـ id إلى addToOrder:', product._id);
     // تحقق إذا كان المنتج موجود بالفعل
     if (cartItems.some((item) => item.product._id === product._id)) {
       setIsCartOpen(true); // فقط افتح السلة
       return;
     }
     try {
-      await addOrder({ product: product._id });
+      await addToOrder(product._id);
       await refreshCart();
+      
+      // إرسال حدث لتحديث العداد في الهيدر
+      window.dispatchEvent(new CustomEvent('cartUpdated'));
     } catch (error: any) {
+      console.error('Error adding to cart:', error);
       // إذا كان الخطأ بسبب وجود المنتج بالفعل، جلب السلة من الباك اند
-      if (error?.response?.data?.message?.includes("Order already exists")) {
+      if (error?.response?.data?.message?.includes("Order already exists") || 
+          error?.message?.includes("Order already exists")) {
         await refreshCart();
         setIsCartOpen(true);
+        
+        // إرسال حدث لتحديث العداد في الهيدر
+        window.dispatchEvent(new CustomEvent('cartUpdated'));
       }
       // يمكن عرض رسالة خطأ هنا إذا أردت
     }
@@ -122,10 +157,20 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   // حذف منتج من السلة
   const removeFromCart = async (orderId: string) => {
+    // تحقق من تسجيل الدخول أولاً
+    if (!isLoggedIn) {
+      console.log('🔒 المستخدم غير مسجل دخول، لن يتم حذف المنتج');
+      return;
+    }
+    
     try {
       await deleteOrder(orderId);
       setCartItems((prev) => prev.filter((item) => item.orderId !== orderId));
+      
+      // إرسال حدث لتحديث العداد في الهيدر
+      window.dispatchEvent(new CustomEvent('cartUpdated'));
     } catch (error) {
+      console.error('Error removing from cart:', error);
       // يمكن عرض رسالة خطأ هنا
     }
   };
@@ -147,7 +192,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const openCart = () => {
     setIsCartOpen(true);
-    refreshCart();
+    if (isLoggedIn) {
+      refreshCart();
+    }
   };
 
   return (

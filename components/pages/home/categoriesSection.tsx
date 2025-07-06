@@ -79,7 +79,7 @@ export default function CategoriesSection({
         </div>
         {isHome ? (
           <div className="mt-10 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-4">
-            {categories.map((category: any) => (
+            {categories.slice(0, 10).map((category: any) => (
               <CategoryCard key={category._id || category.documentId} category={category} isHome={isHome} />
             ))}
           </div>

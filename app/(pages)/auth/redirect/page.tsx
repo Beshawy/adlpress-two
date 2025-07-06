@@ -27,8 +27,8 @@ export default function AuthRedirect() {
       return
     }
 
-    // إذا لم يكن هناك كود ولا خطأ، توجيه لصفحة تسجيل الدخول
-    router.push('/login')
+    // إذا لم يكن هناك كود ولا خطأ، توجيه للصفحة الرئيسية
+    router.push('/')
   }, [searchParams, router])
 
   return (

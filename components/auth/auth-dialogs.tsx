@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Dialog, DialogContent,DialogTrigger, DialogTitle } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@/components/ui/visually-hidden";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { SignupDialog } from "./SignupDialog";
@@ -47,9 +48,7 @@ export function AuthDialogs({ trigger, defaultOpen = false, open=false, onClose 
       <DialogTrigger asChild>{trigger || <Button>تسجيل الدخول</Button>}</DialogTrigger>
       <DialogContent className="sm:max-w-md p-0 max-h-[90vh] z-[83889383] overflow-y-scroll no-scrollbar gap-0 border rounded-lg">
         <DialogTitle>
-          <span style={{position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0}}>
-            نافذة الدخول أو التسجيل
-          </span>
+          <VisuallyHidden>نافذة الدخول أو التسجيل</VisuallyHidden>
         </DialogTitle>
         <button
           onClick={handleClose}

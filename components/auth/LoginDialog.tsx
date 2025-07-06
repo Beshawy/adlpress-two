@@ -43,12 +43,19 @@ export default function LoginDialog({ onSwitchToSignup, onSwitchToForgot, onClos
     try {
       const data = await login({ login: email, password });
       if (data.token) {
-        localStorage.setItem('token', data.token);
         // حفظ userId في localStorage إذا كان موجوداً في الاستجابة
         if (data.user && (data.user._id || data.user.id)) {
           localStorage.setItem('userId', data.user._id || data.user.id);
         }
+        // حفظ اسم المستخدم إذا كان موجوداً
+        if (data.user && data.user.username) {
+          localStorage.setItem('username', data.user.username);
+        }
         setIsLoggedIn(true); // تحديث حالة تسجيل الدخول في UserContext
+        
+        // إرسال حدث لتحديث حالة تسجيل الدخول في المكونات الأخرى
+        window.dispatchEvent(new Event('authStateChanged'));
+        
         toast({ title: "تم تسجيل الدخول بنجاح!", description: "سيتم تحويلك للصفحة المطلوبة." });
         
         if (onClose) onClose();

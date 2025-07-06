@@ -104,7 +104,7 @@ export function SignupDialog({ onSwitchToLogin }: { onSwitchToLogin: () => void 
           <Input
             id="password-signup"
             type="password"
-            placeholder="أدخل كلمة المرور"
+            placeholder="يجب أن تكون الكلمة 8 أحرف على الأقل"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="h-14 text-lg text-gray-500"

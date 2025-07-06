@@ -5,6 +5,20 @@ const API_BASE = "http://46.202.159.197:4000/api/vi/auth";
 const API_CATEGORY = "http://46.202.159.197:4000/api/vi/category";
 const API_PRODUCT = "http://46.202.159.197:4000/api/vi/product";
 
+// دالة مساعدة للحصول على headers المصادقة
+function getAuthHeaders() {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    throw new Error("لم يتم العثور على توكن تسجيل الدخول");
+  }
+  return {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  };
+}
+
 export async function register({ username, email, password }: { username: string; email: string; password: string }) {
   try {
     console.log('Sending registration request to:', `${API_BASE}/register`);
@@ -17,6 +31,18 @@ export async function register({ username, email, password }: { username: string
     });
     
     console.log('Registration response:', response.data);
+    
+    // حفظ التوكن في localStorage إذا كان موجوداً (في حالة التسجيل مع تسجيل الدخول التلقائي)
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+      console.log('Registration token saved to localStorage');
+      
+      // إرسال حدث لتحديث حالة تسجيل الدخول في المكونات الأخرى
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('authStateChanged'));
+      }
+    }
+    
     return response.data;
   } catch (error: any) {
     console.error('Registration error:', error);
@@ -46,6 +72,18 @@ export async function login({ login, password }: { login: string; password: stri
     });
     
     console.log('Login response:', response.data);
+    
+    // حفظ التوكن في localStorage إذا كان موجوداً
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+      console.log('Token saved to localStorage');
+      
+      // إرسال حدث لتحديث حالة تسجيل الدخول في المكونات الأخرى
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('authStateChanged'));
+      }
+    }
+    
     return response.data;
   } catch (error: any) {
     console.error('Login error:', error);
@@ -181,43 +219,55 @@ export async function getProduct(id: string) {
   }
 }
 
-// ==================== ORDERS API ====================
+// ==================== HERO BANNER API ====================
 
-const API_ORDER = "http://46.202.159.197:4000/api/vi/order"
+const API_HERO = "http://46.202.159.197:4000/api/v1/hero";
 
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('token');
-  return {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  };
-};
-
-export async function addOrder(orderData: { product: string }) {
+export async function getHeroBanner() {
   try {
-    const response = await axios.post(`${API_ORDER}/add`, orderData, getAuthHeaders());
+    console.log("Fetching hero banner from:", `${API_HERO}/get/`);
+    const response = await axios.get(`${API_HERO}/get/`);
+    console.log("Hero banner response:", response.data);
     return response.data;
   } catch (error: any) {
-    throw new Error(error.response?.data?.message || "فشل إضافة الطلب");
+    console.error("Hero banner error:", error);
+    throw new Error(error.response?.data?.message || "فشل جلب البنر الإعلاني");
   }
 }
 
-export async function deleteOrder(orderId: string) {
+export async function addHeroBanner(data: { image: File | string, url: string }) {
   try {
-    const response = await axios.delete(`${API_ORDER}/${orderId}`, getAuthHeaders());
+    const formData = new FormData();
+    formData.append('image', data.image);
+    formData.append('url', data.url);
+    const response = await axios.post(`${API_HERO}/add`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
     return response.data;
   } catch (error: any) {
-    throw new Error(error.response?.data?.message || "فشل حذف الطلب");
+    throw new Error(error.response?.data?.message || "فشل إضافة البنر الإعلاني");
   }
 }
 
-export async function getUserOrders() {
+export async function deleteHeroBanner(id: string) {
   try {
-    const response = await axios.get(`${API_ORDER}/userorder`, getAuthHeaders());
+    const response = await axios.delete(`${API_HERO}/delete/${id}`);
     return response.data;
   } catch (error: any) {
-    throw new Error(error.response?.data?.message || "فشل جلب طلبات المستخدم");
+    throw new Error(error.response?.data?.message || "فشل حذف البنر الإعلاني");
+  }
+}
+
+export async function searchProducts(query: string) {
+  try {
+    const response = await fetch(`http://46.202.159.197:4000/api/vi/search/?name=${encodeURIComponent(query)}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    const data = await response.json();
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    return [];
   }
 }
 
@@ -242,6 +292,18 @@ export const handleGoogleCallback = async (code: string) => {
     });
     
     console.log('Google callback response:', response.data);
+    
+    // حفظ التوكن في localStorage إذا كان موجوداً
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+      console.log('Google token saved to localStorage');
+      
+      // إرسال حدث لتحديث حالة تسجيل الدخول في المكونات الأخرى
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('authStateChanged'));
+      }
+    }
+    
     return response.data;
   } catch (error: any) {
     console.error('Google callback error:', error);
@@ -267,7 +329,13 @@ export const isTokenValid = () => {
   if (!token) return false;
   
   try {
-    return token.length > 10;
+    // تحقق من أن التوكن موجود وله طول معقول
+    if (token.length < 10) return false;
+    
+    // تحقق من أن التوكن ليس فارغاً أو "undefined" أو "null"
+    if (token === 'undefined' || token === 'null' || token.trim() === '') return false;
+    
+    return true;
   } catch (error) {
     console.error('Token validation error:', error);
     return false;
@@ -277,6 +345,13 @@ export const isTokenValid = () => {
 export const clearAuthData = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('returnUrl');
+  localStorage.removeItem('userId');
+  localStorage.removeItem('username');
+  
+  // إرسال حدث لتحديث حالة تسجيل الدخول في المكونات الأخرى
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('authStateChanged'));
+  }
 };
 
 // ==================== FAVORITES API ====================
@@ -301,7 +376,7 @@ export async function addFavorite(productId: string) {
     );
     return response.data;
   } catch (error: any) {
-    console.error("خطأ إضافة للمفضلة:", error.response?.data || error.message);
+    //console.error("خطأ إضافة للمفضلة:", error.response?.data || error.message);
     if (error.response) {
       const message = error.response.data?.message || error.response.data || "فشل إضافة المنتج إلى المفضلة";
       throw new Error(message);
@@ -326,7 +401,13 @@ export async function getFavorites() {
   } catch (error: any) {
     
     if (error.response) {
-      // الخادم رد بخطأ
+      // إذا كان الخطأ يشير إلى عدم وجود عناصر مفضلة، نعيد مصفوفة فارغة
+      if (error.response.data?.message?.includes("No favorite items found") || 
+          error.response.data?.message?.includes("لا توجد عناصر مفضلة")) {
+        return [];
+      }
+      
+      // الخادم رد بخطأ آخر
       const message = error.response.data?.message || error.response.data || "فشل جلب المفضلة";
       throw new Error(message);
     } else if (error.request) {
@@ -343,11 +424,8 @@ export async function deleteFavorite(favoriteId: string) {
     const response = await axios.delete(`${API_FAVORITES}/${favoriteId}`, getAuthHeaders());
     return response.data;
   } catch (error: any) {
-    console.error('خطأ في حذف من المفضلة - تفاصيل:', {
-      message: error.message,
-      response: error.response?.data,
-      status: error.response?.status
-    });
+    // إذا كان الحذف ناجح من الواجهة الأمامية، لا نعرض خطأ
+    // فقط نرمي خطأ بسيط بدون تفاصيل
     throw new Error(error.response?.data?.message || "فشل حذف المنتج من المفضلة");
   }
 }
@@ -480,7 +558,7 @@ export async function deleteUser() {
     return response.data;
   } catch (error: any) {
     if (error.response) {
-      const message = error.response.data?.message || "فشل حذف الحساب";
+      const message = error.response.data?.message || "فشل حذف المستخدم";
       throw new Error(message);
     } else if (error.request) {
       throw new Error("لم نتمكن من الوصول للخادم. الرجاء المحاولة مرة أخرى.");
@@ -490,23 +568,35 @@ export async function deleteUser() {
   }
 }
 
+// ==================== LOGOUT API ====================
+
 export async function logout() {
   try {
     const token = localStorage.getItem('token');
     if (!token) {
-      throw new Error("لم يتم العثور على توكن تسجيل الدخول");
+      // إذا لم يكن هناك توكن، نعتبر تسجيل الخروج ناجح
+      clearAuthData();
+      return { message: "تم تسجيل الخروج بنجاح" };
     }
     
-    const response = await axios.get(`${API_BASE}/logout`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-
+    // محاولة إرسال طلب تسجيل الخروج للخادم (اختياري)
+    try {
+      await axios.post(`${API_BASE}/logout`, {}, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+    } catch (serverError) {
+      // حتى لو فشل الطلب للخادم، نكمل تسجيل الخروج محلياً
+      console.warn("فشل في إرسال طلب تسجيل الخروج للخادم:", serverError);
+    }
+    
+    // مسح البيانات المحلية
     clearAuthData();
     
-    return response.data;
+    return { message: "تم تسجيل الخروج بنجاح" };
   } catch (error: any) {
+    // في حالة حدوث خطأ، نمسح البيانات المحلية على أي حال
     clearAuthData();
     
     if (error.response) {
@@ -520,58 +610,110 @@ export async function logout() {
   }
 }
 
-// ==================== HERO BANNER API ====================
-const API_HERO = "http://46.202.159.197:4000/api/v1/hero";
+// ==================== ORDER API ====================
 
-export async function getHeroBanner() {
-  try {
-    console.log("Fetching hero banner from:", `${API_HERO}/get/`);
-    const response = await axios.get(`${API_HERO}/get/`);
-    console.log("Hero banner response:", response.data);
-    return response.data;
-  } catch (error: any) {
-    console.error("Hero banner error:", error);
-    throw new Error(error.response?.data?.message || "فشل جلب البنر الإعلاني");
-  }
-}
+const API_ORDER = "http://46.202.159.197:4000/api/vi/order";
 
-export async function addHeroBanner(data: { image: File | string, url: string }) {
+// إضافة منتج إلى السلة
+export async function addToOrder(productId: string) {
   try {
-    const formData = new FormData();
-    formData.append('image', data.image);
-    formData.append('url', data.url);
-    const response = await axios.post(`${API_HERO}/add`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error("لم يتم العثور على توكن تسجيل الدخول");
+    }
+
+    const response = await axios.post(`${API_ORDER}/add`, {
+      product: productId
+    }, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
     });
+
+    console.log('Order added successfully:', response.data);
     return response.data;
   } catch (error: any) {
-    throw new Error(error.response?.data?.message || "فشل إضافة البنر الإعلاني");
+    console.error('Add to order error:', error);
+    
+    if (error.response) {
+      const message = error.response.data?.message || "فشل إضافة المنتج إلى السلة";
+      console.error('Server error response:', error.response.data);
+      throw new Error(message);
+    } else if (error.request) {
+      console.error('No response received from server');
+      throw new Error("لم نتمكن من الوصول للخادم. الرجاء المحاولة مرة أخرى.");
+    } else {
+      console.error('Request setup error:', error.message);
+      throw new Error("حدث خطأ في الاتصال. الرجاء المحاولة مرة أخرى.");
+    }
   }
 }
 
-export async function deleteHeroBanner(id: string) {
+// جلب منتجات السلة للمستخدم
+export async function getUserOrders() {
   try {
-    const response = await axios.delete(`${API_HERO}/delete/${id}`);
-    return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.message || "فشل حذف البنر الإعلاني");
-  }
-}
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error("لم يتم العثور على توكن تسجيل الدخول");
+    }
 
-export async function searchProducts(query: string) {
-  try {
-    const response = await fetch(`http://46.202.159.197:4000/api/vi/search/?name=${encodeURIComponent(query)}`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
+    const response = await axios.get(`${API_ORDER}/userorder`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
     });
-    const data = await response.json();
-    return Array.isArray(data) ? data : [];
-  } catch (error) {
-    return [];
+
+    console.log('User orders fetched successfully:', response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('Get user orders error:', error);
+    
+    if (error.response) {
+      const message = error.response.data?.message || "فشل جلب منتجات السلة";
+      console.error('Server error response:', error.response.data);
+      throw new Error(message);
+    } else if (error.request) {
+      console.error('No response received from server');
+      throw new Error("لم نتمكن من الوصول للخادم. الرجاء المحاولة مرة أخرى.");
+    } else {
+      console.error('Request setup error:', error.message);
+      throw new Error("حدث خطأ في الاتصال. الرجاء المحاولة مرة أخرى.");
+    }
   }
 }
 
+// حذف منتج من السلة
+export async function deleteOrder(orderId: string) {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error("لم يتم العثور على توكن تسجيل الدخول");
+    }
 
+    const response = await axios.delete(`${API_ORDER}/${orderId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
 
+    console.log('Order deleted successfully:', response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('Delete order error:', error);
+    
+    if (error.response) {
+      const message = error.response.data?.message || "فشل حذف المنتج من السلة";
+      console.error('Server error response:', error.response.data);
+      throw new Error(message);
+    } else if (error.request) {
+      console.error('No response received from server');
+      throw new Error("لم نتمكن من الوصول للخادم. الرجاء المحاولة مرة أخرى.");
+    } else {
+      console.error('Request setup error:', error.message);
+      throw new Error("حدث خطأ في الاتصال. الرجاء المحاولة مرة أخرى.");
+    }
+  }
+}
 
 

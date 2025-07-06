@@ -17,7 +17,7 @@ export default function PurchasesPage() {
     const checkAuthAndLoadOrders = async () => {
       const token = localStorage.getItem('token')
       if (!token) {
-        router.push('/login')
+        router.push('/')
         return
       }
 

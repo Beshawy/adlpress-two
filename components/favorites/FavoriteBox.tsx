@@ -17,9 +17,10 @@ const FavoriteBox: React.FC<FavoriteBoxProps> = ({ open, onOpenChange, favorites
   const [favorites, setFavorites] = useState<any[]>(favoritesProp || []);
   const [loading, setLoading] = useState(!favoritesProp);
   const { addToCart, openCart } = useCart();
+  const isLoggedIn = !!localStorage.getItem("token");
 
   useEffect(() => {
-    if (open && !favoritesProp) {
+    if (open && !favoritesProp && isLoggedIn) {
       setLoading(true);
       getFavorites()
         .then((data) => {
@@ -33,12 +34,18 @@ const FavoriteBox: React.FC<FavoriteBoxProps> = ({ open, onOpenChange, favorites
     } else if (favoritesProp) {
       setFavorites(favoritesProp);
       setLoading(false);
+    } else if (!isLoggedIn) {
+      setFavorites([]);
+      setLoading(false);
     }
-  }, [open, favoritesProp]);
+  }, [open, favoritesProp, isLoggedIn]);
 
   const handleDelete = async (id: string) => {
     await deleteFavorite(id);
     setFavorites((prev) => prev.filter((item) => item._id !== id));
+    
+    // إرسال حدث لتحديث العداد في الهيدر
+    window.dispatchEvent(new CustomEvent('favoritesUpdated'));
   };
 
   return (
@@ -85,8 +92,15 @@ const FavoriteBox: React.FC<FavoriteBoxProps> = ({ open, onOpenChange, favorites
                         size="sm"
                         className="mt-2"
                         onClick={() => {
+                          // تحقق من وجود id المنتج
+                          const itemId = item._id || item.id;
+                          if (!itemId) {
+                            console.error('🚫 لا يمكن إضافة منتج بدون id:', item);
+                            return;
+                          }
+                          
                           addToCart({
-                            _id: item._id,
+                            _id: itemId,
                             name: item.title?.ar || item.title?.en || "اسم المنتج",
                             price: item.sale && item.sale > 0
                               ? Number((item.price - (item.price * item.sale / 100)).toFixed(2))

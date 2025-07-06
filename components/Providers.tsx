@@ -2,6 +2,7 @@
 import { SessionProvider } from "next-auth/react";
 import { CartProvider } from "@/context/CartContext";
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { isTokenValid } from "@/lib/api";
 
 // تعريف نوع بيانات المستخدم
 interface UserContextType {
@@ -14,37 +15,63 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
+  const [isLoggedIn, setIsLoggedIn] = useState(isTokenValid());
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     const checkToken = () => {
-      setIsLoggedIn(!!localStorage.getItem("token"));
+      const isValid = isTokenValid();
+      setIsLoggedIn(isValid);
     };
 
     // عند تحميل الصفحة
     checkToken();
+    
+    // تأخير بسيط للتأكد من تحديث localStorage
+    const timeoutId = setTimeout(checkToken, 100);
 
     // عند أي تغيير في localStorage (حتى من نافذة أخرى)
     window.addEventListener("storage", checkToken);
+    
+    // الاستماع لحدث authStateChanged من المكونات الأخرى
+    window.addEventListener("authStateChanged", checkToken);
 
     // مراقبة التغييرات المحلية (من نفس الصفحة)
     const origSetItem = localStorage.setItem;
     localStorage.setItem = function(key, value) {
       origSetItem.apply(this, arguments);
-      if (key === "token") checkToken();
+      if (key === "token") {
+        setTimeout(checkToken, 0); // تأخير بسيط لضمان تحديث localStorage
+      }
     };
 
     const origRemoveItem = localStorage.removeItem;
     localStorage.removeItem = function(key) {
       origRemoveItem.apply(this, arguments);
-      if (key === "token") checkToken();
+      if (key === "token") {
+        setTimeout(checkToken, 0); // تأخير بسيط لضمان تحديث localStorage
+      }
     };
 
     return () => {
+      clearTimeout(timeoutId);
       window.removeEventListener("storage", checkToken);
-      // ملاحظة: في تطبيقات الإنتاج يفضل إعادة setItem/removeItem الأصليين هنا إذا كان هناك احتمال إعادة تحميل أو unmount
+      window.removeEventListener("authStateChanged", checkToken);
+      // إعادة الدوال الأصلية
+      localStorage.setItem = origSetItem;
+      localStorage.removeItem = origRemoveItem;
     };
+  }, []);
+
+  // useEffect إضافي للتأكد من تحديث حالة تسجيل الدخول عند تغيير التوكن
+  useEffect(() => {
+    const handleAuthChange = () => {
+      const isValid = isTokenValid();
+      setIsLoggedIn(isValid);
+    };
+
+    window.addEventListener('authStateChanged', handleAuthChange);
+    return () => window.removeEventListener('authStateChanged', handleAuthChange);
   }, []);
 
   return (
