@@ -86,8 +86,8 @@ export default async function page() {
             ...productsData.reverse(),
             ...productsData.reverse(),
             ...productsData.reverse(),
-          ].map((item: ProductType) => (
-            <div key={item.id + Math.random()}>
+          ].map((item: ProductType, index: number) => (
+            <div key={`${item.id}-${index}-${Math.random()}`}>
               <ProductAccountCart product={item} />
             </div>
           ))}
