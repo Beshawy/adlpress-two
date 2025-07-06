@@ -78,7 +78,7 @@ export default function ProfilePage() {
     fetchUserData();
     // إعادة تحميل البيانات عند تغيير التوكن (مثلاً بعد تسجيل الدخول)
     // window.addEventListener("storage", ... ) يمكن إضافتها إذا أردت دعم التحديث الفوري بين التبويبات
-  }, [fetchUserData]);
+  }, [fetchUserData, router]);
 
   const handleEdit = () => {
     setEditMode(true);

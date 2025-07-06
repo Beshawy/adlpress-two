@@ -17,7 +17,7 @@ const productsData: ProductType[] = [
     oldPrice: 559,
     rating: 4,
     category: "Electronics",
-    sale: true,
+    sale: 20,
   },
   {
     id: 2,
@@ -33,7 +33,7 @@ const productsData: ProductType[] = [
     oldPrice: 559,
     rating: 4,
     category: "Electronics",
-    sale: true,
+    sale: 20,
   },
   {
     id: 3,
@@ -49,7 +49,7 @@ const productsData: ProductType[] = [
     oldPrice: 559,
     rating: 4,
     category: "Electronics",
-    sale: true,
+    sale: 20,
   },
   {
     id: 4,
@@ -65,7 +65,7 @@ const productsData: ProductType[] = [
     oldPrice: 559,
     rating: 4,
     category: "Electronics",
-    sale: true,
+    sale: 20,
   },
   {
     id: 5,
@@ -81,7 +81,7 @@ const productsData: ProductType[] = [
     oldPrice: 559,
     rating: 4,
     category: "Electronics",
-    sale: true,
+    sale: 20,
   },
   {
     id: 6,
@@ -97,7 +97,7 @@ const productsData: ProductType[] = [
     oldPrice: 559,
     rating: 4,
     category: "Electronics",
-    sale: true,
+    sale: 20,
   },
 ];
 

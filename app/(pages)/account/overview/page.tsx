@@ -6,7 +6,7 @@ export interface ProductOrderType  extends ProductType {
 }
 
 
-const productsData: ProductOrderType[] = [
+const productsData: ProductType[] = [
   {
     id: 1,
     image: "/icons/products/1.png",
@@ -21,8 +21,8 @@ const productsData: ProductOrderType[] = [
     oldPrice: 559,
     rating: 4,
     category: "Electronics",
-    sale: true,
-  order: false},
+    sale: 20,
+  },
   {
     id: 2,
     image: "/icons/products/2.png",
@@ -37,8 +37,8 @@ const productsData: ProductOrderType[] = [
     oldPrice: 559,
     rating: 4,
     category: "Electronics",
-    sale: true,
-  order: false},
+    sale: 20,
+  },
   {
     id: 3,
     image: "/icons/products/3.png",
@@ -53,8 +53,8 @@ const productsData: ProductOrderType[] = [
     oldPrice: 559,
     rating: 4,
     category: "Electronics",
-    sale: true,
-  order: false},
+    sale: 20,
+  },
   {
     id: 4,
     image: "/icons/products/4.png",
@@ -69,8 +69,8 @@ const productsData: ProductOrderType[] = [
     oldPrice: 559,
     rating: 4,
     category: "Electronics",
-    sale: true,
-  order: false},
+    sale: 20,
+  },
   {
     id: 5,
     image: "/icons/products/5.png",
@@ -85,8 +85,8 @@ const productsData: ProductOrderType[] = [
     oldPrice: 559,
     rating: 4,
     category: "Electronics",
-    sale: true,
-  order: false},
+    sale: 20,
+  },
   {
     id: 6,
     image: "/icons/products/6.png",
@@ -101,8 +101,8 @@ const productsData: ProductOrderType[] = [
     oldPrice: 559,
     rating: 4,
     category: "Electronics",
-    sale: true,
-  order: false},
+    sale: 20,
+  },
 ];
 
 export default function AccountOverview() {
