@@ -6,6 +6,8 @@ export interface Product {
   title?: { ar: string; en: string };
   name?: string;
   price?: number;
+  default_price?: number;
+  oldPrice?: number;
   image?: string | Array<{ url: string }>;
   description?: string;
   desc?: { ar: string; en: string };
@@ -13,6 +15,9 @@ export interface Product {
   sale?: number;
   category?: string;
   rating?: number;
+  status?: ProductStatusType;
+  created_at?: string;
+  updated_at?: string;
   reviews?: Array<{
     name: string;
     rating: number;
@@ -20,8 +25,31 @@ export interface Product {
   }>;
 }
 
-// النوع الجديد للاستخدام العام
-export type ProductType = Product;
+// النوع الجديد للاستخدام العام - يتضمن جميع الخصائص المطلوبة
+export type ProductType = {
+  id: string | number;
+  _id?: string;
+  title?: { ar: string; en: string };
+  name?: string;
+  price?: number;
+  default_price?: number;
+  oldPrice?: number;
+  image?: string | Array<{ url: string }>;
+  description?: string;
+  desc?: { ar: string; en: string };
+  quantity?: number;
+  sale?: number;
+  category?: string;
+  rating?: number;
+  status?: ProductStatusType;
+  created_at?: string;
+  updated_at?: string;
+  reviews?: Array<{
+    name: string;
+    rating: number;
+    comment: string;
+  }>;
+};
 
 // النوع القديم للتوافق مع الكود الموجود
 export interface LegacyProductType {

@@ -4,18 +4,7 @@ import React from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Trash2, Minus, Plus } from "lucide-react"
-
-interface ProductType {
-  id: number
-  image: string
-  name: string
-  description: string
-  price: number
-  oldPrice?: number
-  quantity: number
-  category: string
-  sale?: boolean
-}
+import { ProductType } from "@/@types/api/product"
 
 interface ProductAccountCartProps {
   product: ProductType
@@ -26,14 +15,14 @@ const ProductAccountCart: React.FC<ProductAccountCartProps> = ({ product }) => {
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       <div className="relative aspect-square">
         <Image
-          src={product.image}
-          alt={product.name}
+          src={product.image as string}
+          alt={product.name || ""}
           fill
           className="object-cover"
         />
-        {product.sale && (
+        {product.sale && product.sale > 0 && (
           <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
-            خصم
+            خصم {product.sale}%
           </div>
         )}
       </div>
