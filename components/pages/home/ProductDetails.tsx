@@ -24,7 +24,7 @@ export default function ProductDetails({ product, onClose }: { product: any, onC
       // إذا لم يكن المستخدم مسجل دخول، نضع مصفوفة فارغة
       setFavorites([]);
     }
-  }, [product?._id, isLoggedIn]);
+  }, [product?._id, isLoggedIn, product]);
 
   if (!product) {
     console.log("🚫 ProductDetails: لا يوجد منتج");

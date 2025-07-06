@@ -33,7 +33,7 @@ export default function ProductModal({ product, onClose }: { product: any, onClo
         { name: 'سارة علي', rating: 4, comment: 'جودة جيدة وسعر مناسب.' },
       ]);
     }
-  }, [product?._id, isLoggedIn]);
+  }, [product?._id, isLoggedIn, product]);
 
   const isInFavorites = (productId: string) => favorites.some((fav) => fav._id === productId);
 
