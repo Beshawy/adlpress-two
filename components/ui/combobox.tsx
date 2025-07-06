@@ -79,7 +79,7 @@ export function Combobox({ options, value, onChange, placeholder, emptyMessage, 
                   onSelect={() => handleSelect(`create__${search}`)}
                   className="cursor-pointer text-primary"
                 >
-                  <span className="mr-2 font-bold">+</span> إنشاء "{search}"
+                  <span className="mr-2 font-bold">+</span> إنشاء &quot;{search}&quot;
                 </CommandItem>
               ) : (
                 emptyMessage || "لا توجد نتائج."

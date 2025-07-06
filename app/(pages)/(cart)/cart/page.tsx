@@ -101,7 +101,16 @@ export default function Page() {
     }
   };
 
-  if (fetchLoading) return <LoadingPage />;
+  if (fetchLoading) return (
+    <div className="min-h-screen bg-gray-50 py-10">
+      <div className="max-w-4xl mx-auto px-6">
+        <div className="text-center">
+          <div className="text-xl font-bold text-yellow-500 mb-4">جاري التحميل...</div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500 mx-auto"></div>
+        </div>
+      </div>
+    </div>
+  );
   if (fetchError) return notFound();
 
   return (

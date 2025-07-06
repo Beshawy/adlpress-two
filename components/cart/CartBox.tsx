@@ -33,7 +33,7 @@ const CartBox = () => {
     if (isCartOpen) {
       refreshCart();
     }
-  }, [isCartOpen]);
+  }, [isCartOpen, refreshCart]);
 
   const handleCheckout = () => {
     // التحقق من وجود منتجات في السلة
