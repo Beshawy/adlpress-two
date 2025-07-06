@@ -1,11 +1,11 @@
 "use client"
-import { Product } from "@/app/(pages)/products/[id]/page";
+
+import { Product } from "@/@types/api/product";
 import ProductCard from "@/components/products/product";
 
 import useFetch from "@/hooks/use-fetch";
 import { notFound, useParams } from "next/navigation";
 import React from "react";
-import LoadingPage from "../../products/[id]/loading";
 
 function collectProducts(data: any): any[] {
   const products: any[] = [];
@@ -45,8 +45,16 @@ export default function Page() {
   const products:Product[] = collectProducts(data)
 
   if (loading) {
-    return <LoadingPage />
-    
+    return (
+      <div className="min-h-screen bg-gray-50 py-10">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="text-center">
+            <div className="text-xl font-bold text-yellow-500 mb-4">جاري التحميل...</div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500 mx-auto"></div>
+          </div>
+        </div>
+      </div>
+    );
   }
   if (error) {
     return notFound()

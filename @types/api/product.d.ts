@@ -1,25 +1,23 @@
 type ProductStatusType = "active" | "inactive";
 
-export interface ProductType {
-  _id: string;
-  title: {
-    ar: string;
-    en: string;
-  };
-  desc: {
-    ar: string;
-    en: string;
-  };
-  category: string;
-  price: number;
-  review?: number;
+export interface Product {
+  id: string | number;
+  _id?: string;
+  title?: { ar: string; en: string };
+  name?: string;
+  price?: number;
+  image?: string | Array<{ url: string }>;
+  description?: string;
+  desc?: { ar: string; en: string };
+  quantity?: number;
   sale?: number;
-  image: Array<{
-    public_id: string;
-    url: string;
-    _id: string;
+  category?: string;
+  rating?: number;
+  reviews?: Array<{
+    name: string;
+    rating: number;
+    comment: string;
   }>;
-  __v: number;
 }
 
 // النوع القديم للتوافق مع الكود الموجود
