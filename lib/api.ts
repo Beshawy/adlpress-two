@@ -21,8 +21,6 @@ function getAuthHeaders() {
 
 export async function register({ username, email, password }: { username: string; email: string; password: string }) {
   try {
-    console.log('Sending registration request to:', `${API_BASE}/register`);
-    console.log('With data:', { username, email });
     
     const response = await axios.post(`${API_BASE}/register`, {
       username,
@@ -30,12 +28,10 @@ export async function register({ username, email, password }: { username: string
       password,
     });
     
-    console.log('Registration response:', response.data);
     
     // حفظ التوكن في localStorage إذا كان موجوداً (في حالة التسجيل مع تسجيل الدخول التلقائي)
     if (response.data.token) {
       localStorage.setItem('token', response.data.token);
-      console.log('Registration token saved to localStorage');
       
       // إرسال حدث لتحديث حالة تسجيل الدخول في المكونات الأخرى
       if (typeof window !== 'undefined') {
@@ -45,17 +41,13 @@ export async function register({ username, email, password }: { username: string
     
     return response.data;
   } catch (error: any) {
-    console.error('Registration error:', error);
     
     if (error.response) {
       const message = error.response.data?.message || "فشل التسجيل";
-      console.error('Server error response:', error.response.data);
       throw new Error(message);
     } else if (error.request) {
-      console.error('No response received from server');
       throw new Error("لم نتمكن من الوصول للخادم. الرجاء التأكد من تشغيل الخادم والمحاولة مرة أخرى.");
     } else {
-      console.error('Request setup error:', error.message);
       throw new Error("حدث خطأ في الاتصال. الرجاء المحاولة مرة أخرى.");
     }
   }
@@ -63,20 +55,16 @@ export async function register({ username, email, password }: { username: string
 
 export async function login({ login, password }: { login: string; password: string }) {
   try {
-    console.log('Sending login request to:', `${API_BASE}/login`);
-    console.log('With data:', { email: login });
     
     const response = await axios.post(`${API_BASE}/login`, {
       email: login,
       password,
     });
     
-    console.log('Login response:', response.data);
     
     // حفظ التوكن في localStorage إذا كان موجوداً
     if (response.data.token) {
       localStorage.setItem('token', response.data.token);
-      console.log('Token saved to localStorage');
       
       // إرسال حدث لتحديث حالة تسجيل الدخول في المكونات الأخرى
       if (typeof window !== 'undefined') {
@@ -86,17 +74,14 @@ export async function login({ login, password }: { login: string; password: stri
     
     return response.data;
   } catch (error: any) {
-    console.error('Login error:', error);
     
     if (error.response) {
       const message = error.response.data?.message || "فشل تسجيل الدخول";
-      console.error('Server error response:', error.response.data);
+
       throw new Error(message);
     } else if (error.request) {
-      console.error('No response received from server');
       throw new Error("لم نتمكن من الوصول للخادم. الرجاء المحاولة مرة أخرى.");
     } else {
-      console.error('Request setup error:', error.message);
       throw new Error("حدث خطأ في الاتصال. الرجاء المحاولة مرة أخرى.");
     }
   }
@@ -155,12 +140,10 @@ export async function getAllProducts() {
     } else if (Array.isArray(response.data?.data)) {
       products = response.data.data;
     } else {
-      console.error("⚠️ لم يتم جلب منتجات أو البيانات ليست مصفوفة صحيحة!");
     }
 
     return products;
   } catch (error: any) {
-    console.error("❌ خطأ أثناء جلب المنتجات:", error);
     throw new Error(error.response?.data?.message || "فشل جلب المنتجات");
   }
 }
